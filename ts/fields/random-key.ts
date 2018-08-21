@@ -1,7 +1,7 @@
 import * as bluebird from 'bluebird'
 import * as rawRandomBytes from 'randombytes'
-const randomBytes = bluebird.promisify(rawRandomBytes)
-import { PrimitiveFieldType } from '../types'
+const randomBytes = <any>bluebird.promisify(rawRandomBytes)
+import { PrimitiveFieldType } from '../types/fields'
 import { Field } from './types'
 
 export class RandomKeyField extends Field {
