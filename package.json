@@ -1,0 +1,43 @@
+{
+  "name": "storex",
+  "version": "0.0.1",
+  "description": "Storex core module - a storage layer without assumptions",
+  "main": "lib/index.js",
+  "typings": "lib/index",
+  "scripts": {
+    "prepare": "tsc",
+    "prepare:watch": "npm run prepare -- -w",
+    "prepublishOnly": "npm run prepare",
+    "test:jest": "jest --verbose --config=.jest-config.json",
+    "test:jest:watch": "jest --verbose --watch --config=.jest-config.json",
+    "test:mocha": "mocha --require ts-node/register 'ts/**/*.test.ts'",
+    "test:mocha:watch": "mocha -r source-map-support/register -r ts-node/register 'ts/**/*.test.ts' --watch --watch-extensions ts"
+  },
+  "keywords": [
+    "storage",
+    "graph",
+    "database",
+    "typescript"
+  ],
+  "author": "Vincent den Boer",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "event-emitter": "^0.3.5",
+    "events": "^3.0.0",
+    "lodash": "^4.17.10",
+    "pluralize": "^7.0.0",
+    "randombytes": "^2.0.6",
+    "source-map-support": "^0.4.18"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.6",
+    "@types/events": "^1.2.0",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "expect": "^23.5.0",
+    "mocha": "^4.0.1",
+    "sinon": "^4.1.2",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.1"
+  }
+}

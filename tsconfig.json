@@ -1,0 +1,21 @@
+{
+    "version": "2.5",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "removeComments": true,
+        "lib": ["es2017"],
+        "noLib": false,
+        "preserveConstEnums": true,
+        "declaration": true,
+        "sourceMap": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "lib"
+    },
+    "filesGlob": [
+        "./ts/**/*.ts",
+        "!./node_modules/**/*.ts"
+    ]
+}
