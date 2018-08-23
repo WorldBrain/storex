@@ -4,7 +4,7 @@ import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConn
 
 // Returns a super-putObject which automatically creates new objects for reverse relationships and handles custom field types
 export function augmentCreateObject(rawCreateObject, {registry} : {registry : StorageRegistry}) {
-    const augmentedPutObject = async (collection : string, object, options?) => {
+    const augmentedCreateObject = async (collection : string, object, options?) => {
         const collectionDefinition = registry.collections[collection]
         
         // lonelyObject is shorter than objectWithoutRelationships
@@ -51,7 +51,7 @@ export function augmentCreateObject(rawCreateObject, {registry} : {registry : St
                 for (const objectToCreate of objectsToCreate) {
                     objectToCreate[reverseRelationship.alias] = insertedObject[<string>collectionDefinition.pkIndex]
                     
-                    const {object: insertedChild} = await augmentedPutObject(otherCollection, objectToCreate)
+                    const {object: insertedChild} = await augmentedCreateObject(otherCollection, objectToCreate)
                     if (reverseRelationship.single) {
                         insertedObject[reverseRelationshipAlias] = insertedChild
                     } else {
@@ -68,5 +68,5 @@ export function augmentCreateObject(rawCreateObject, {registry} : {registry : St
         return {object: insertedObject}
     }
 
-    return augmentedPutObject
+    return augmentedCreateObject
 }
