@@ -32,7 +32,7 @@ export abstract class StorageBackend {
     }
 
     async cleanup() : Promise<any> {}
-    async migrate() : Promise<any> {}
+    async migrate({database} : {database?} = {}) : Promise<any> {}
 
     // async putObject(collection : string, object, options? : PutSingleOptions) : Promise<PutSingleResult> {
     //     const definition = this.registry.collections[collection]
