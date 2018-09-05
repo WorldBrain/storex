@@ -2,15 +2,17 @@ import StorageRegistry from "../registry"
 
 // export type PutSingleOptions = any
 // export type PutSingleResult = {operation: 'create' | 'update', object?: any}
-export type CreateSingleOptions = any
-export type CreateSingleResult = {object?: any}
-export type UpdateManyOptions = any
+export type CreateSingleOptions = {database? : string}
+export type CreateSingleResult = {object? : any}
+export type FindSingleOptions = {database? : string}
+export type FindManyOptions = {database? : string, limit? : number}
+export type UpdateManyOptions = {database? : string}
 export type UpdateManyResult = any
-export type UpdateSingleOptions = any
+export type UpdateSingleOptions = {database? : string}
 export type UpdateSingleResult = any
-export type DeleteSingleOptions = any
+export type DeleteSingleOptions = {database? : string}
 export type DeleteSingleResult = any
-export type DeleteManyOptions = {limit? : number}
+export type DeleteManyOptions = {database? : string, limit? : number}
 export type DeleteManyResult = any
 
 export class DeletionTooBroadError extends Error {
@@ -50,8 +52,8 @@ export abstract class StorageBackend {
 
     abstract async createObject(collection : string, object, options? : CreateSingleOptions)
     
-    abstract findObjects<T>(collection : string, query, options?) : Promise<Array<T>>
-    async findObject<T>(collection : string, query, options?) : Promise<T | null> {
+    abstract findObjects<T>(collection : string, query, options? : FindManyOptions) : Promise<Array<T>>
+    async findObject<T>(collection : string, query, options? : FindSingleOptions) : Promise<T | null> {
         const objects = await this.findObjects<T>(collection, query, {...options, limit: 1})
         if (!objects.length) {
             return null

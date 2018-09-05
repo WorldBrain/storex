@@ -5,7 +5,7 @@ export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
     // putObject(object) : Promise<PutSingleResult>
-    createObject(object) : Promise<CreateSingleResult>
+    createObject(object, options?) : Promise<CreateSingleResult>
     findOneObject<T>(query, options?) : Promise<T | null>
     findObjects<T>(query, options?) : Promise<Array<T>>
     updateOneObject(object, updates, options?)
@@ -35,7 +35,7 @@ export default class StorageManager {
     collection(name : string) : StorageCollection {
         return {
             // putObject: (object) => this.backend.putObject(name, object),
-            createObject: (object) => this.backend.createObject(name, object),
+            createObject: (object, options?) => this.backend.createObject(name, object, options),
             findOneObject: (query, options?) => this.backend.findObject(name, query, options),
             findObjects: (query, options?) => this.backend.findObjects(name, query, options),
             updateOneObject: (object, options?) => this.backend.updateObject(name, object, options),
