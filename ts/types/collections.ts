@@ -1,4 +1,4 @@
-import { Field } from '../fields'
+import { Field } from '../fields/types'
 import { FieldType } from "./fields"
 import { IndexDefinition, IndexSourceFields } from './indices'
 import { Relationships, RelationshipsByAlias } from './relationships'

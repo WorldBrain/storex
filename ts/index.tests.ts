@@ -112,7 +112,7 @@ export function testStorageBackend(backendCreator: () => Promise<StorageBackend>
                 email: 'blub@bla.com',
                 isVerified: false,
                 isPrimary: true,
-                verificationCode: expect.objectContaining({})
+                verificationCode: expect['objectContaining']({})
             }]
         })
     })
