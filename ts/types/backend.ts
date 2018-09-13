@@ -1,4 +1,5 @@
 import StorageRegistry from "../registry"
+import { StorageBackendFeatureSupport } from "./backend-features";
 
 export type CreateSingleOptions = {database? : string}
 export type CreateSingleResult = {object? : any}
@@ -25,10 +26,19 @@ export class DeletionTooBroadError extends Error {
 }
 
 export abstract class StorageBackend {
+    protected features : StorageBackendFeatureSupport = {}
+    protected customFeatures : {[name : string]: true} = {}
     protected registry : StorageRegistry
 
     configure({registry} : {registry : StorageRegistry}) {
         this.registry = registry
+
+        // TODO: Compile this away in production builds
+        for (const key of Object.keys(this.customFeatures)) {
+            if (key.indexOf('.') === -1) {
+                throw new Error(`Custom storage backend features must be namespaced with a '.', e.g. 'dexie.getVersionHistory'`)
+            }
+        }
     }
 
     async cleanup() : Promise<any> {}
@@ -64,5 +74,18 @@ export abstract class StorageBackend {
         } else {
             throw new Error('Updating single objects with compound pks is not supported yet')
         }
+    }
+
+    supports(feature : string) {
+        return !!this.features[feature] || !!this.customFeatures[feature]
+    }
+
+    async operation(operation : string, ...args) {
+        if (!this.supports(operation)) {
+            throw new Error(`Unsupported storage backend operation: ${operation}`)
+        }
+
+        const parts = operation.split('.')
+        return await this[parts.length === 1 ? parts[0] : parts[1]](...args)
     }
 }

@@ -6,6 +6,9 @@ import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConn
 export function augmentCreateObject(rawCreateObject, {registry} : {registry : StorageRegistry}) {
     const augmentedPutObject = async (collection : string, object, options?) => {
         const collectionDefinition = registry.collections[collection]
+        if (!collectionDefinition) {
+            throw new Error(`Unknown collection: ${collection}`)
+        }
         
         // lonelyObject is shorter than objectWithoutRelationships
         // https://imgur.com/gallery/DaJpmyg

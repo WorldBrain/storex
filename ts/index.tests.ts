@@ -87,7 +87,18 @@ export function generateTestObject(
     }
 }
 
-export function testStorageBackend(backendCreator: () => Promise<StorageBackend>) {
+export function testStorageBackend(backendCreator: () => Promise<StorageBackend>, {fullTextSearch} : {fullTextSearch? : boolean} = {}) {
+    describe('Basics with auth example', () => {
+        testStorageBackendWithAuthExample(backendCreator)
+    })
+    if (fullTextSearch) {
+        describe('Full text search', () => {
+            testStorageBackendFullTextSearch(backendCreator)
+        })
+    }
+}
+
+export function testStorageBackendWithAuthExample(backendCreator: () => Promise<StorageBackend>) {
     let backend: StorageBackend
     let storageManager: StorageManager
 
@@ -140,5 +151,54 @@ export function testStorageBackend(backendCreator: () => Promise<StorageBackend>
             user: createdUser['id'],
             newsletter: createdNewsletter['id'],
         })
+    })
+}
+
+export function testStorageBackendFullTextSearch(backendCreator: () => Promise<StorageBackend>) {
+    let backend: StorageBackend
+
+    beforeEach(async () => {
+        backend = await backendCreator()
+        await backend.migrate()
+    })
+
+    afterEach(async () => {
+        await backend.cleanup()
+    })
+
+    const createTestStorageManager = () => {
+        const storageManager = new StorageManager({ backend })
+        storageManager.registry.registerCollections({
+            pages: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    url: {type: 'string'},
+                    text: {type: 'string'},
+                },
+                indices: [{field: 'text'}]
+            }
+        })
+        storageManager.finishInitialization()
+        return storageManager
+    }
+
+    it('should do full-text search of whole words', async function() {
+        if (!backend.supports('fullTextSearch')) {
+            this.skip()
+        }
+
+        const storageManager = createTestStorageManager()
+        await storageManager.collection('pages').createObject({
+            url: 'https://www.test.com/',
+            text: 'testing this stuff is not always easy'
+        })
+
+        const results = await storageManager.collection('pages').findObjects({text: ['easy']})
+        expect(results).toMatchObject([
+            {
+                url: 'https://www.test.com/',
+                text: 'testing this stuff is not always easy',
+            }
+        ])
     })
 }
