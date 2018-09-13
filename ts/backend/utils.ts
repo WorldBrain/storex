@@ -1,4 +1,4 @@
-import pickBy = require('lodash/fp/pickBy')
+const pickBy = require('lodash/fp/pickBy')
 import { StorageRegistry } from '..'
 import { isConnectsRelationship, isChildOfRelationship, getOtherCollectionOfConnectsRelationship } from '../types'
 
