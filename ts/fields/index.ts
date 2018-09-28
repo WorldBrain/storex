@@ -3,7 +3,11 @@ import { RandomKeyField } from './random-key'
 import { Field } from './types'
 
 export class UrlField extends Field {
-    primitiveType = <PrimitiveFieldType>'string'
+    primitiveType = 'string' as PrimitiveFieldType
+}
+
+export class MediaField extends Field {
+    primitiveType = 'binary' as PrimitiveFieldType
 }
 
 export class FieldTypeRegistry {
