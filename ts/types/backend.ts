@@ -23,17 +23,6 @@ export interface SuggestResult<S, P> {
     pk : P
 }
 
-export class DeletionTooBroadError extends Error {
-    public deletionTooBroad = true
-
-    constructor(public collection : string, public query: any, public limit : number, public actual : number) {
-        super(
-            `You wanted to delete only ${limit} objects from the ${collection} collection, but you almost deleted ${actual}!` +
-            `Phew, that was close, you owe me a beer! Oh, and you can find the query you tried to execute as the .query property of this error.`
-        )
-    }
-}
-
 export abstract class StorageBackend {
     protected features : StorageBackendFeatureSupport = {}
     protected customFeatures : {[name : string]: true} = {}
