@@ -17,3 +17,4 @@ export class DeletionTooBroadError extends StorexError {
 }
 
 export class UnimplementedError extends StorexError {}
+export class InvalidOptionsError extends StorexError {}

@@ -1,27 +1,30 @@
 import StorageRegistry from "../registry"
 import { StorageBackendFeatureSupport } from "./backend-features";
 
-export type CreateSingleOptions = {database? : string}
+export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
-export type FindSingleOptions = {database? : string}
-export type FindManyOptions = {database? : string, limit? : number, skip? : number, reverse? : boolean}
-export type CountOptions = any
-export type UpdateManyOptions = {database? : string}
-export type UpdateManyResult = any
-export type UpdateSingleOptions = {database? : string}
-export type UpdateSingleResult = any
-export type DeleteSingleOptions = {database? : string}
-export type DeleteSingleResult = any
-export type DeleteManyOptions = {database? : string, limit? : number}
-export type DeleteManyResult = any
-export interface SuggestOptions extends FindManyOptions {
-    includePks? : boolean
-}
-export interface SuggestResult<S, P> {
+export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions
+export type FindManyOptions = FindSingleOptions & PaginationOptions
+export type CountOptions = DBNameOptions & IgnoreCaseOptions
+export type SuggestOptions = FindManyOptions & {includePks? : boolean}
+export type SuggestResult<S, P> = Array<{
     collection : string
     suggestion : S
     pk : P
-}
+}>
+export type UpdateManyOptions = DBNameOptions
+export type UpdateManyResult = any
+export type UpdateSingleOptions = DBNameOptions
+export type UpdateSingleResult = any
+export type DeleteSingleOptions = DBNameOptions
+export type DeleteSingleResult = any
+export type DeleteManyOptions = DBNameOptions & {limit? : number}
+export type DeleteManyResult = any
+
+export type IgnoreCaseOptions = {ignoreCase? : string[]}
+export type ReverseOptions = {reverse? : boolean}
+export type DBNameOptions = {database? : string}
+export type PaginationOptions = {limit? : number, skip? : number}
 
 export abstract class StorageBackend {
     protected features : StorageBackendFeatureSupport = {}
@@ -66,14 +69,14 @@ export abstract class StorageBackend {
     }
 
     /**
-     * Note that this is a naiive implementation that is not very space efficient.
+     * Note that this naiive implementation will not work as expected.
      * It is recommended to override this implementation in storex backends with
      * DB-native queries.
      *
      * @template {S} Type of suggestion to return.
      * @template {P} The type of primary key to return.
      */
-    async suggestObjects<S, P = any>(collection : string, query, options? : SuggestOptions) : Promise<Array<SuggestResult<S, P>>> {
+    async suggestObjects<S, P = any>(collection : string, query, options? : SuggestOptions) : Promise<SuggestResult<S, P>> {
         const objects = await this.findObjects(collection, query, options)
 
         return (objects as S[]).map(obj => ({

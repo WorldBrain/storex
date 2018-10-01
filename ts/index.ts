@@ -1,18 +1,35 @@
 import StorageRegistry from './registry'
-import { StorageBackend, CreateSingleResult, SuggestResult } from './types'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 export { default as StorageRegistry } from './registry'
+import {
+    StorageBackend,
+    CreateSingleOptions,
+    FindSingleOptions,
+    FindManyOptions,
+    SuggestOptions,
+    CountOptions,
+    UpdateManyOptions,
+    UpdateSingleOptions,
+    DeleteManyOptions,
+    DeleteSingleOptions,
+    CreateSingleResult,
+    SuggestResult,
+    DeleteSingleResult,
+    DeleteManyResult,
+    UpdateSingleResult,
+    UpdateManyResult,
+} from './types'
 
 export interface StorageCollection {
-    createObject(object) : Promise<CreateSingleResult>
-    findOneObject<T>(query, options?) : Promise<T | null>
-    findObjects<T>(query, options?) : Promise<Array<T>>
-    countObjects(query, options?) : Promise<number>
-    suggestObjects<S, P = any>(query, options?) : Promise<Array<SuggestResult<S, P>>>
-    updateOneObject(object, updates, options?)
-    updateObjects(query, updates, options?)
-    deleteOneObject(object, options?)
-    deleteObjects(query, options?)
+    createObject(object, options? : CreateSingleOptions) : Promise<CreateSingleResult>
+    findOneObject<T>(query, options?: FindSingleOptions) : Promise<T | null>
+    findObjects<T>(query, options?: FindManyOptions) : Promise<Array<T>>
+    countObjects(query, options?: CountOptions) : Promise<number>
+    suggestObjects<S, P = any>(query, options?: SuggestOptions) : Promise<SuggestResult<S, P>>
+    updateOneObject(object, updates, options?: UpdateSingleOptions): Promise<UpdateSingleResult>
+    updateObjects(query, updates, options?: UpdateManyOptions): Promise<UpdateManyResult>
+    deleteOneObject(object, options?: DeleteSingleOptions): Promise<DeleteSingleResult>
+    deleteObjects(query, options?: DeleteManyOptions): Promise<DeleteManyResult>
 }
 
 export interface StorageCollectionMap {
