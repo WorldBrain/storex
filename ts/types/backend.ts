@@ -5,6 +5,7 @@ export type CreateSingleOptions = {database? : string}
 export type CreateSingleResult = {object? : any}
 export type FindSingleOptions = {database? : string}
 export type FindManyOptions = {database? : string, limit? : number, skip? : number, reverse? : boolean}
+export type CountOptions = any
 export type UpdateManyOptions = {database? : string}
 export type UpdateManyResult = any
 export type UpdateSingleOptions = {database? : string}
@@ -45,7 +46,7 @@ export abstract class StorageBackend {
     async migrate({database} : {database?} = {}) : Promise<any> {}
 
     abstract async createObject(collection : string, object, options? : CreateSingleOptions)
-    
+
     abstract findObjects<T>(collection : string, query, options? : FindManyOptions) : Promise<Array<T>>
     async findObject<T>(collection : string, query, options? : FindSingleOptions) : Promise<T | null> {
         const objects = await this.findObjects<T>(collection, query, {...options, limit: 1})
@@ -55,7 +56,18 @@ export abstract class StorageBackend {
 
         return objects[0]
     }
-    
+
+    /**
+     * Note that this is a naiive implementation that is not very space efficient.
+     * It is recommended to override this implementation in storex backends with
+     * DB-native count queries.
+     */
+    async countObjects(collection : string, query, options? : CountOptions) : Promise<number> {
+        const objects = await this.findObjects(collection, query)
+
+        return objects.length
+    }
+
     abstract updateObjects(collection : string, query, updates, options? : UpdateManyOptions) : Promise<UpdateManyResult>
     async updateObject(collection : string, object, updates, options? : UpdateSingleOptions) : Promise<UpdateSingleResult> {
         const definition = this.registry.collections[collection]
@@ -65,7 +77,7 @@ export abstract class StorageBackend {
             throw new Error('Updating single objects with compound pks is not supported yet')
         }
     }
-    
+
     abstract deleteObjects(collection : string, query, options? : DeleteManyOptions) : Promise<DeleteManyResult>
     async deleteObject(collection : string, object, options? : DeleteSingleOptions) : Promise<DeleteSingleResult> {
         const definition = this.registry.collections[collection]

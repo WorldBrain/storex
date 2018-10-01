@@ -8,6 +8,7 @@ export interface StorageCollection {
     createObject(object) : Promise<CreateSingleResult>
     findOneObject<T>(query, options?) : Promise<T | null>
     findObjects<T>(query, options?) : Promise<Array<T>>
+    countObjects(query, options?) : Promise<number>
     updateOneObject(object, updates, options?)
     updateObjects(query, updates, options?)
     deleteOneObject(object, options?)
@@ -38,6 +39,7 @@ export default class StorageManager {
             createObject: (object) => this.backend.createObject(name, object),
             findOneObject: (query, options?) => this.backend.findObject(name, query, options),
             findObjects: (query, options?) => this.backend.findObjects(name, query, options),
+            countObjects: (query, options?) => this.backend.countObjects(name, query, options),
             updateOneObject: (object, options?) => this.backend.updateObject(name, object, options),
             updateObjects: (query, options?) => this.backend.updateObjects(name, query, options),
             deleteOneObject: (object, options?) => this.backend.deleteObject(name, object, options),
