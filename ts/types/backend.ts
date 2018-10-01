@@ -14,6 +14,14 @@ export type DeleteSingleOptions = {database? : string}
 export type DeleteSingleResult = any
 export type DeleteManyOptions = {database? : string, limit? : number}
 export type DeleteManyResult = any
+export interface SuggestOptions extends FindManyOptions {
+    includePks? : boolean
+}
+export interface SuggestResult<S, P> {
+    collection : string
+    suggestion : S
+    pk : P
+}
 
 export class DeletionTooBroadError extends Error {
     public deletionTooBroad = true
@@ -60,12 +68,30 @@ export abstract class StorageBackend {
     /**
      * Note that this is a naiive implementation that is not very space efficient.
      * It is recommended to override this implementation in storex backends with
-     * DB-native count queries.
+     * DB-native queries.
      */
     async countObjects(collection : string, query, options? : CountOptions) : Promise<number> {
         const objects = await this.findObjects(collection, query)
 
         return objects.length
+    }
+
+    /**
+     * Note that this is a naiive implementation that is not very space efficient.
+     * It is recommended to override this implementation in storex backends with
+     * DB-native queries.
+     *
+     * @template {S} Type of suggestion to return.
+     * @template {P} The type of primary key to return.
+     */
+    async suggestObjects<S, P = any>(collection : string, query, options? : SuggestOptions) : Promise<Array<SuggestResult<S, P>>> {
+        const objects = await this.findObjects(collection, query, options)
+
+        return (objects as S[]).map(obj => ({
+            collection,
+            suggestion: obj,
+            pk: null,
+        }))
     }
 
     abstract updateObjects(collection : string, query, updates, options? : UpdateManyOptions) : Promise<UpdateManyResult>
