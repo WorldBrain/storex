@@ -1,6 +1,9 @@
 export class StorexError extends Error {
     constructor(msg: string) {
         super(msg)
+
+        // Manually fixes TS issue that comes with extending from `Error`:
+        // https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, new.target.prototype)
     }
 }
