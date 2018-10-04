@@ -6,12 +6,6 @@ export type CreateSingleResult = {object? : any}
 export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions
 export type FindManyOptions = FindSingleOptions & PaginationOptions
 export type CountOptions = DBNameOptions & IgnoreCaseOptions
-export type SuggestOptions = FindManyOptions & {includePks? : boolean}
-export type SuggestResult<S, P> = Array<{
-    collection : string
-    suggestion : S
-    pk : P
-}>
 export type UpdateManyOptions = DBNameOptions
 export type UpdateManyResult = any
 export type UpdateSingleOptions = DBNameOptions
@@ -66,24 +60,6 @@ export abstract class StorageBackend {
         const objects = await this.findObjects(collection, query)
 
         return objects.length
-    }
-
-    /**
-     * Note that this naiive implementation will not work as expected.
-     * It is recommended to override this implementation in storex backends with
-     * DB-native queries.
-     *
-     * @template {S} Type of suggestion to return.
-     * @template {P} The type of primary key to return.
-     */
-    async suggestObjects<S, P = any>(collection : string, query, options? : SuggestOptions) : Promise<SuggestResult<S, P>> {
-        const objects = await this.findObjects(collection, query, options)
-
-        return (objects as S[]).map(obj => ({
-            collection,
-            suggestion: obj,
-            pk: null,
-        }))
     }
 
     abstract updateObjects(collection : string, query, updates, options? : UpdateManyOptions) : Promise<UpdateManyResult>
