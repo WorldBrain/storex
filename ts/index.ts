@@ -1,17 +1,32 @@
 import StorageRegistry from './registry'
-import { StorageBackend, CreateSingleResult } from './types'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 export { default as StorageRegistry } from './registry'
+import {
+    StorageBackend,
+    CreateSingleOptions,
+    FindSingleOptions,
+    FindManyOptions,
+    CountOptions,
+    UpdateManyOptions,
+    UpdateSingleOptions,
+    DeleteManyOptions,
+    DeleteSingleOptions,
+    CreateSingleResult,
+    DeleteSingleResult,
+    DeleteManyResult,
+    UpdateSingleResult,
+    UpdateManyResult,
+} from './types'
 
 export interface StorageCollection {
-    // putObject(object) : Promise<PutSingleResult>
-    createObject(object) : Promise<CreateSingleResult>
-    findOneObject<T>(query, options?) : Promise<T | null>
-    findObjects<T>(query, options?) : Promise<Array<T>>
-    updateOneObject(object, updates, options?)
-    updateObjects(query, updates, options?)
-    deleteOneObject(object, options?)
-    deleteObjects(query, options?)
+    createObject(object, options? : CreateSingleOptions) : Promise<CreateSingleResult>
+    findOneObject<T>(query, options?: FindSingleOptions) : Promise<T | null>
+    findObjects<T>(query, options?: FindManyOptions) : Promise<Array<T>>
+    countObjects(query, options?: CountOptions) : Promise<number>
+    updateOneObject(object, updates, options?: UpdateSingleOptions): Promise<UpdateSingleResult>
+    updateObjects(query, updates, options?: UpdateManyOptions): Promise<UpdateManyResult>
+    deleteOneObject(object, options?: DeleteSingleOptions): Promise<DeleteSingleResult>
+    deleteObjects(query, options?: DeleteManyOptions): Promise<DeleteManyResult>
 }
 
 export interface StorageCollectionMap {
@@ -34,10 +49,10 @@ export default class StorageManager {
 
     collection(name : string) : StorageCollection {
         return {
-            // putObject: (object) => this.backend.putObject(name, object),
             createObject: (object) => this.backend.createObject(name, object),
             findOneObject: (query, options?) => this.backend.findObject(name, query, options),
             findObjects: (query, options?) => this.backend.findObjects(name, query, options),
+            countObjects: (query, options?) => this.backend.countObjects(name, query, options),
             updateOneObject: (object, options?) => this.backend.updateObject(name, object, options),
             updateObjects: (query, options?) => this.backend.updateObjects(name, query, options),
             deleteOneObject: (object, options?) => this.backend.deleteObject(name, object, options),
