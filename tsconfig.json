@@ -12,10 +12,8 @@
         "declaration": true,
         "sourceMap": true,
         "suppressImplicitAnyIndexErrors": true,
+        "typeRoots": ["./node_modules/@types"],
         "outDir": "lib"
     },
-    "filesGlob": [
-        "./ts/**/*.ts",
-        "!./node_modules/**/*.ts"
-    ]
+    "filesGlob": ["./ts/**/*.ts", "!./node_modules/**/*.ts"]
 }
