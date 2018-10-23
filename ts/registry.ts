@@ -61,7 +61,11 @@ export default class StorageRegistry extends EventEmitter {
 
     _finishInitialization() {
         this._connectReverseRelationships()
-        this.emit('initialized')
+        return Promise.all(
+            this.listeners('initialized').map(
+                list => list.call(this),
+            ),
+        )
     }
 
     _preprocessFieldTypes(def: CollectionDefinition) {

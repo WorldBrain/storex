@@ -44,7 +44,7 @@ export default class StorageManager {
     }
 
     finishInitialization() {
-        this.registry._finishInitialization()
+        return this.registry._finishInitialization()
     }
 
     collection(name : string) : StorageCollection {
