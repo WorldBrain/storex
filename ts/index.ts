@@ -1,6 +1,5 @@
 import StorageRegistry from './registry'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
-export { default as StorageRegistry } from './registry'
 import {
     StorageBackend,
     CreateSingleOptions,
@@ -17,6 +16,8 @@ import {
     UpdateSingleResult,
     UpdateManyResult,
 } from './types'
+
+export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
     createObject(object, options? : CreateSingleOptions) : Promise<CreateSingleResult>
@@ -60,3 +61,5 @@ export default class StorageManager {
         }
     }
 }
+
+export * from './types'
