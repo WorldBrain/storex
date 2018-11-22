@@ -14,7 +14,7 @@ $ npm install storex-backend-dexie # Only one available right now using IndexedD
 Basic usage
 ===========
 
-First, configure a StorageBackend and set up the StorageManager, which will be the main point of access to define, query and manipulate your data. For more in-depth information on how to do all of this, please refer to [./docs/0-start-here.md](the docs).
+First, configure a StorageBackend and set up the StorageManager, which will be the main point of access to define, query and manipulate your data. For more in-depth information on how to do all of this, please refer to [the docs](./docs/0-start-here.md).
 
 ```
 import StorageManager from 'storex'
@@ -77,7 +77,7 @@ await storageManager.collection('todoList').findObjects({user: user.id}) # You c
 Further documentation
 =====================
 
-You can [./docs/0-start-here.md](find the docs here). Also, we'll be writing more and more automated tests which also serve as documentation.
+You can [find the docs here](./docs/0-start-here.md). Also, we'll be writing more and more automated tests which also serve as documentation.
 
 Status and future development
 =============================
