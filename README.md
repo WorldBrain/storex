@@ -93,8 +93,10 @@ The following items are on the roadmap in no partical order:
 - **Automatic relationship fetching:** This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases.
 - **Cross-relationship filters:** Filtering by relationships, like `collection('user').findObjects({'email.active': true})`
 - **GraphQL server and consumer:** Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
+- **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
+- **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
 - **Unified access control definition:** Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
-- **Synching back-end for offline-first application:** An aggragente back-end which intelligently writes to a client-side database first, and syncs with the server when possible.
+- **Synching back-end for offline-first applications:** An aggragente back-end which intelligently writes to a client-side database first, and syncs with the server when possible.
 - **Composite back-end writing to multiple back-ends at once:** When you're switching databases or cloud providers, there may be period where your application needs to the exact same data to multiple database systems at once.
 - **Assisting migrations from one database to another:** Creating standard procedures allowing copying data from one database to another with any paradigm translations that might be needed.
 - **Server-side full-text search server integration":** Allow for example to store your data in MondoDB, but your full-text index in ElasticSearch.

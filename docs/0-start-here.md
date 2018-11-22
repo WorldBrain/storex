@@ -1,0 +1,56 @@
+What Storex is and is not
+=========================
+
+Every application needs to deal with data storage. We need to deal with databases, transport layers, serialization, access management, etc. These problems are not new, yet we keep reinventing them with every new language and framework out there, having to deal with pieces not exactly fitting together the right way with every new application we build. Storex wants to provide a structured way to talk about your data and what needs to happen with it, while leaving the heavy lifting to the Storex backends and your application logic. Through this, it enables you to postpone important decisions as possible, fit everything together as you need, and integrate it into existing applications easily without it wanting to dominate your application (it's a collection of libraries, not a framework.)
+
+These are some of the principles behind Storex:
+
+* Common problems around data should be easy, really specific ones should be possible by diving under the hood
+* The core should provide way to talk about data problems, not actually solve them
+* Backends should be able to provide functionality specific to them, and common operations and patterns should be able to flow into the core in a controlled way
+* Packagages should do one thing, and do it well
+* No unintented side-effects: no global variables or evil import-time code, so everything is easy to isolate and run in parallel if needed 
+
+From this flows:
+
+* Storex is not a framework
+* Storex is not an ORM (although you could build one on top, even though I believe ORMs are anti-patterns)
+
+How it works
+============
+
+You initialize a StorageBackend imported from its respective package:
+
+```
+import { DexieStorageBackend } from 'storex-backend-dexie'
+const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
+```
+
+You construct the storage manager, which will give you access to the StorageRegistry and the collection objects to access your data:
+
+```
+const storageManager = new StorageManager({ backend })
+
+# More info about this below
+storageManager.registry.registerCollections({
+    user: { ... },
+    todoList: { ... },
+})
+
+# This links together relationships you defined between different collections and tells the back-end to connect
+await storageManager.finishInitialization()
+
+# You can access meta-data about your collections and relationships between them here
+storageManager.registry.collections.user.relationships
+
+# You can access your data here
+storageManager.collection('user').createObject({ ... })
+
+```
+
+In-depth documentation
+======================
+
+* (./collections.md)[Defining collections] : This is about the steps above where you interact with storageManager.registry, describing the various options for your collections, fields and relationships.
+* (./registry.md)[Introspecting collections] : How you can use the available meta-data about your data in your applications and when writing a back-end.
+* (./operations)[Interacting with data] : How to query and manipulate your data.
