@@ -14,7 +14,7 @@ $ npm install storex-backend-dexie # Only one available right now using IndexedD
 Basic usage
 ===========
 
-First, configure a StorageBackend and set up the StorageManager, which will be the main point of access to define, query and manipulate your data. For more in-depth information on how to do all of this, please refer to the docs (coming soon!).
+First, configure a StorageBackend and set up the StorageManager, which will be the main point of access to define, query and manipulate your data. For more in-depth information on how to do all of this, please refer to [./docs/0-start-here.md](the docs).
 
 ```
 import StorageManager from 'storex'
@@ -74,6 +74,11 @@ console.log(user.id)
 await storageManager.collection('todoList').findObjects({user: user.id}) # You can also use MongoDB-like queries
 ```
 
+Further documentation
+=====================
+
+You can [./docs/0-start-here.md](find the docs here). Also, we'll be writing more and more automated tests which also serve as documentation.
+
 Status and future development
 =============================
 
@@ -86,7 +91,7 @@ At present, these features are implemented and tested:
 - **Run automated storage-related tests in memory:** Using the Dexie back-end, you can pass in a fake IndexedDB implementation to run your storage in-memory for faster automated and manual testing.
 - **Version management of data models:** For each collection, you can pass in an array of different date-versioned collection versions, and you'll be able to iterate over your data model versions through time.
 
-The following items are on the roadmap in no partical order:
+The following items are on the roadmap in no particular order:
 
 - **Sequelize backend allowing your code to run in MySQL, PostgreSQL, MSSQL and SQLite:** [Already written](https://github.com/WorldBrain/memex-root-server/tree/master/src/components/storage/backend/sequelize), but waiting to be factored out, this allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
 - **DB-agnostic data migrations:** An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
@@ -103,3 +108,4 @@ The following items are on the roadmap in no partical order:
 - **Pre-compiled queries:** Let the backend know which kind of queries you're going to do, so the backend can optimize compilation, and you get a unified overview of how your applcation queries and manipulates data.
 - **Query analytics:** Report query performance and production usage patterns to your anaylics backend to give you insight into possible optimization opportunities (such as what kind of indices to create.)
 
+Also, Storex was built with decentralization in mind. The first available backend is Dexie, which allows you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
