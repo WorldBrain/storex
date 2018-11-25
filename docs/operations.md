@@ -1,7 +1,9 @@
+Data manipulation and retrieval
+===============================
+
 Once you've registered your collection models and have initialized the StorageManager, you can begin playing with your data. For now, there are only basic CRUD operation, but we'll extend the functionality offered across different backends as needs and good patterns emerge. For anything you can't do through the core Storex API, the backends you're using should expose the lower layers for you to play around with (like the Sequelize models for SQL databases or the Dexie object for IndexedDB.)
 
-collection(name : string).createObject(<object>[, <options>])
-=============================================================
+## collection(name : string).createObject(<object>[, <options>])
 
 Creates a new object and any necessary child objects, cleaning and preparing necessay fields before inserting them into the DB. For the creation of objects with children, see [Relations](./collections.md#relationships). `<options>` for now is empty, but will be the place to pass additional instructions to the back-end while creating the objects.
 
@@ -26,8 +28,7 @@ const email = await storageManager.collection('email').createObject({address: 'b
 console.log(email.activationCode) // Some random string
 ```
 
-collection(name : string).updateObjects(<filter>, <object>[, <options>])
-========================================================================
+## collection(name : string).updateObjects(<filter>, <object>[, <options>])
 
 Updates all objects matching `<filter>`, which a MongoDB-like filter.
 
@@ -53,8 +54,7 @@ await storageManager.collection('email').updateObjects({address: 'boo@bla.com'},
 console.log((await storageManager.collection('email').findOneObject({address: 'boo@bla.com'})).isActive) // false
 ```
 
-collection(name : string).deleteObjects(<filter>[, <options>])
-========================================================================
+## collection(name : string).deleteObjects(<filter>[, <options>])
 
 Deletes all objects from the database matching `<filter>`, which a MongoDB-like filter. Pass in `{}` as `<filter>` to delete all objects from DB.
 
@@ -77,8 +77,7 @@ const email = await storageManager.collection('email').createObject({address: 'b
 await storageManager.collection('email').deleteObjects({address: 'boo@bla.com'})
 ```
 
-collection(name : string).findObjects(<filter>[, <options>])
-============================================================
+## collection(name : string).findObjects(<filter>[, <options>])
 
 Fetches all objects from a collection matching `filter`. Currently supported `options` for Dexie back-end include:
 * `limit`: number
@@ -107,8 +106,7 @@ console.log(await storageManager.collection('email').findObjects({isActive: fals
 # [{address: 'foo@bla.com', isActive: false}, {address: 'bar@bla.com', isActive: false}]
 ```
 
-collection(name : string).findOneObject(<filter>[, <options>])
-============================================================
+## collection(name : string).findOneObject(<filter>[, <options>])
 
 Fetches a single objects from a collection matching `filter`. Currently supported `options` for Dexie back-end include:
 * `reverse`: boolean, reverse ordering of result set
