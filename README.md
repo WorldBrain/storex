@@ -110,8 +110,23 @@ The following items are on the roadmap in no particular order:
 
 Also, Storex was built with decentralization in mind. The first available backend is Dexie, which allows you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
 
-
 Contributing
 ============
 
-Coming soon!
+There are different ways you can contribute:
+
+- **Report bugs:** The most simple way. Scream at us  :)  If you can find the time though, we'd really appreciate it if you could attach a PR with a failing unit test.
+- **Tackle outstanding bugs:** Great way to dip your toes in the water. Some of the reported bugs may already have failing unit tests attached to them!
+- **Propose new features:** Open an issue to describe a new feature you'd like to see. Please take the time to explain your reasoning behind the request, how it would benefit the Storex ecosystem and things like use-cases if relevant.
+- **Implement new features:** We try our best to make extensive descriptions of how features should work, and a clear decision process if the features are yet to be designed. Features to be implemented will soon be in the issue tracker with guides how to pick up those features.
+
+### Building for development
+
+Storex is written in [Typescript](https://www.typescriptlang.org/). As such, there's a lot of type information serving as documentation for the reader of the code. To start writing code, do the following:
+
+1) Check out the Storex repo: `git clone git@github.com:WorldBrain/storex.git`. Skip steps 3, 4 and 5 if you're going to work on the Storex core package.
+2) Run `yarn` inside the checked out repo.
+3) Inside the checked out repo, run `npm link`.
+4) In another directory, check a out back-end you'd like to work on: `git clone git@github.com:WorldBrain/storex-backend-dexie.git`
+5) Run `yarn` again inside the checked out repo.
+6) Run `yarn test:mocha:watch` to start hacking!

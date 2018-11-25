@@ -52,5 +52,5 @@ In-depth documentation
 ======================
 
 * [Defining collections](./collections.md): This is about the steps above where you interact with storageManager.registry, describing the various options for your collections, fields and relationships.
-* [Introspecting collections](./registry.md): How you can use the available meta-data about your data in your applications and when writing a back-end.
 * [Interacting with data](./operations): How to query and manipulate your data.
+* [Introspecting collections](./registry.md): How you can use the available meta-data about your data in your applications and when writing a back-end.
