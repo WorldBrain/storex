@@ -1,5 +1,3 @@
-* Indices
-
 Collections are defined by calls to the StorageRegistry.registerCollection(s) function:
 
 ```
@@ -81,7 +79,7 @@ storageManager.registry.registerCollections({
 })
 await storageManger.finishInitialization()
 
-const email = await storageManager.collection('email').createObject({address: 'boo@bla.com', activationCode: {key: 'thekey'}})
+const email = await storageManager.collection('email').createObject({address: 'boo@bla.com', isActive: false, activationCode: {key: 'thekey'}})
 console.log(email.activationCode)
 
 // The parent objects pk is stored on the child object on the configured alias field

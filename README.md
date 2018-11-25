@@ -1,6 +1,6 @@
 Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application.
 
-**Status:** Proof of concept used in production to interact with IndexedDB while having the freedom to shift to the cloud and decentralize storage in the near future. Needs a lot more development, but implemented functionality is stable. Please consider contributing through easy to pick up tasks to get you started!
+**Status:** Proof of concept used in production to interact with IndexedDB while having the freedom to shift to the cloud and decentralize storage in the near future. Needs a lot more development, but implemented functionality is working. That being said, the API is subject to change between minor versions until the 1.0 release. Please consider contributing through easy to pick up tasks to get you started!
 
 Installation
 ============
@@ -21,7 +21,7 @@ import StorageManager from 'storex'
 import { DexieStorageBackend } from 'storex-backend-dexie'
 
 const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
-const storageManager = new StorageManager({ backend })
+const storageManager = new StorageManager({ backend: storageBackend })
 storageManager.registry.registerCollections({
     user: {
         version: new Date(2018, 11, 11),
@@ -109,3 +109,9 @@ The following items are on the roadmap in no particular order:
 - **Query analytics:** Report query performance and production usage patterns to your anaylics backend to give you insight into possible optimization opportunities (such as what kind of indices to create.)
 
 Also, Storex was built with decentralization in mind. The first available backend is Dexie, which allows you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
+
+
+Contributing
+============
+
+Coming soon!

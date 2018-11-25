@@ -29,7 +29,7 @@ const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
 You construct the storage manager, which will give you access to the StorageRegistry and the collection objects to access your data:
 
 ```
-const storageManager = new StorageManager({ backend })
+const storageManager = new StorageManager({ backend: storageBackend })
 
 # More info about this below
 storageManager.registry.registerCollections({
