@@ -96,10 +96,10 @@ The following items are on the roadmap in no particular order:
 - [Sequelize backend allowing your code to run in MySQL, PostgreSQL, MSSQL and SQLite](https://github.com/WorldBrain/storex/issues/2): [Already written](https://github.com/WorldBrain/memex-root-server/tree/master/src/components/storage/backend/sequelize), but waiting to be factored out, this allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
 - [DB-agnostic data migrations](https://github.com/WorldBrain/storex/issues/3): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
 - [Relationship fetching & filtering](https://github.com/WorldBrain/storex/issues/4): This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases. Also, you could filter by relationships, like `collection('user').findObjects({'email.active': true})`.
-- **API server and consumer:** Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
-- **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
-- **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
+- [API server and consumer](https://github.com/WorldBrain/storex/issues/5): Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
 - **Unified access control definition:** Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
+- **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
+- **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
 - **Synching back-end for offline-first applications:** An aggragente back-end which intelligently writes to a client-side database first, and syncs with the server when possible.
 - **Composite back-end writing to multiple back-ends at once:** When you're switching databases or cloud providers, there may be period where your application needs to the exact same data to multiple database systems at once.
 - **Assisting migrations from one database to another:** Creating standard procedures allowing copying data from one database to another with any paradigm translations that might be needed.
@@ -117,7 +117,7 @@ There are different ways you can contribute:
 - **Report bugs:** The most simple way. Scream at us  :)  If you can find the time though, we'd really appreciate it if you could attach a PR with a failing unit test.
 - **Tackle outstanding bugs:** Great way to dip your toes in the water. Some of the reported bugs may already have failing unit tests attached to them!
 - **Propose new features:** Open an issue to describe a new feature you'd like to see. Please take the time to explain your reasoning behind the request, how it would benefit the Storex ecosystem and things like use-cases if relevant.
-- **Implement new features:** We try our best to make extensive descriptions of how features should work, and a clear decision process if the features are yet to be designed. Features to be implemented will soon be in the issue tracker with guides how to pick up those features.
+- **Implement new features:** We try our best to make extensive descriptions of how features should work, and a clear decision process if the features are yet to be designed. Features to be implemented [can be found here](https://github.com/WorldBrain/storex/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement) with help how to pick up those features.
 
 ### Building for development
 
