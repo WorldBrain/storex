@@ -93,11 +93,11 @@ At present, these features are implemented and tested:
 
 The following items are on the roadmap in no particular order:
 
-- **Sequelize backend allowing your code to run in MySQL, PostgreSQL, MSSQL and SQLite:** [Already written](https://github.com/WorldBrain/memex-root-server/tree/master/src/components/storage/backend/sequelize), but waiting to be factored out, this allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
-- **DB-agnostic data migrations:** An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
+- [Sequelize backend allowing your code to run in MySQL, PostgreSQL, MSSQL and SQLite](https://github.com/WorldBrain/storex/issues/2): [Already written](https://github.com/WorldBrain/memex-root-server/tree/master/src/components/storage/backend/sequelize), but waiting to be factored out, this allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
+- [DB-agnostic data migrations](https://github.com/WorldBrain/storex/issues/3): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
 - **Automatic relationship fetching:** This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases.
 - **Cross-relationship filters:** Filtering by relationships, like `collection('user').findObjects({'email.active': true})`
-- **GraphQL server and consumer:** Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
+- **API server and consumer:** Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
 - **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
 - **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
 - **Unified access control definition:** Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
