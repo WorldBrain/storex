@@ -5,6 +5,7 @@ Once you've registered your collection models and have initialized the StorageMa
 
 ## collection(name : string).createObject(<object>[, <options>])
 
+
 Creates a new object and any necessary child objects, cleaning and preparing necessay fields before inserting them into the DB. For the creation of objects with children, see [Relations](./collections.md#relationships). `<options>` for now is empty, but will be the place to pass additional instructions to the back-end while creating the objects.
 
 **Returns**: Object with database generated and cleaned fields (auto-increment primary keys, random keys, etc.) and child objects created.
@@ -29,6 +30,7 @@ console.log(email.activationCode) // Some random string
 ```
 
 ## collection(name : string).updateObjects(<filter>, <object>[, <options>])
+
 
 Updates all objects matching `<filter>`, which a MongoDB-like filter.
 
