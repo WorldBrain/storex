@@ -1,7 +1,7 @@
 Once you've registered your collection models and have initialized the StorageManager, you can begin playing with your data. For now, there are only basic CRUD operation, but we'll extend the functionality offered across different backends as needs and good patterns emerge. For anything you can't do through the core Storex API, the backends you're using should expose the lower layers for you to play around with (like the Sequelize models for SQL databases or the Dexie object for IndexedDB.)
 
 collection(name : string).createObject(<object>[, <options>])
-===========================================================
+=============================================================
 
 Creates a new object and any necessary child objects, cleaning and preparing necessay fields before inserting them into the DB. For the creation of objects with children, see [Relations](./collections.md#relationships). `<options>` for now is empty, but will be the place to pass additional instructions to the back-end while creating the objects.
 
