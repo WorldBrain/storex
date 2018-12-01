@@ -1,4 +1,4 @@
-Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application.
+Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application. Everything together that means that every problem you encounter while rapidly iterating towards a serious product, from choosing a suitable DB to suddenly realizing you need to migrate your data model, or even switch DBs, will get a ton easier because you don't have to solve them for the 109th time yourself.
 
 **Status:** Proof of concept used in production to interact with IndexedDB while having the freedom to shift to the cloud and decentralize storage in the near future. Needs a lot more development, but implemented functionality is working. That being said, the API is subject to change between minor versions until the 1.0 release. Please consider contributing through easy to pick up tasks to get you started!
 
@@ -8,7 +8,7 @@ Installation
 Storex is a collection of Node.js modules (written in TypeScript) available through NPM, meant to be used both client- and server-side. To start, you need the core and a backend:
 ```
 $ npm install storex --save
-$ npm install storex-backend-dexie # Only one available right now using IndexedDB, Sequelize back-end waiting to be released
+$ npm install storex-backend-dexie --save # Only one available right now using IndexedDB, Sequelize back-end waiting to be released
 ```
 
 Basic usage
