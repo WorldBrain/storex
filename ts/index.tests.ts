@@ -126,6 +126,16 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
                 verificationCode: expect['objectContaining']({})
             }]
         })
+
+        await storageManager.collection('user').updateObjects({id: user.id}, {isActive: true})
+        expect(await storageManager.collection('user').findOneObject({id: user.id})).toMatchObject({
+            id: user.id,
+            identifier: user.identifier,
+            isActive: true
+        })
+
+        await storageManager.collection('user').deleteObjects({id: user.id})
+        expect(await storageManager.collection('user').findOneObject({id: user.id})).toBe(null)
     })
 
     it('should handle connects relationships correctly', async () => {
