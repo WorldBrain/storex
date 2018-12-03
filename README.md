@@ -1,4 +1,4 @@
-Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application.
+Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application. Everything together that means that every problem you encounter while rapidly iterating towards a serious product, from choosing a suitable DB to suddenly realizing you need to migrate your data model, or even switch DBs, will get a ton easier because you don't have to solve them for the 109th time yourself.
 
 **Status:** Proof of concept used in production to interact with IndexedDB while having the freedom to shift to the cloud and decentralize storage in the near future. Needs a lot more development, but implemented functionality is working. That being said, the API is subject to change between minor versions until the 1.0 release. Please consider contributing through easy to pick up tasks to get you started!
 
@@ -8,7 +8,13 @@ Installation
 Storex is a collection of Node.js modules (written in TypeScript) available through NPM, meant to be used both client- and server-side. To start, you need the core and a backend:
 ```
 $ npm install storex --save
-$ npm install storex-backend-dexie # Only one available right now using IndexedDB, Sequelize back-end waiting to be released
+
+$ # For a client-side DB
+$ npm install storex-backend-dexie --save # IndexedDB through Dexie library
+
+$ # For a server-side SQL DB
+$ npm install storex-backend-sequelize --save # MySQL, PostgreSQL, SQLite, MSSQL through Sequelize
+
 ```
 
 Basic usage
@@ -84,6 +90,7 @@ Status and future development
 
 At present, these features are implemented and tested:
 
+- **One DB abstraction layer for client- and server-side applications:** Using Dexie for IndexedDB, or Sequelize for SQL databases. This allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
 - **Defining data in a DB-agnostic way as a graph of collections**: By registering your data collections with the StorageManager, you can have an easily introspectable representation of your data model
 - **Automatic creation of relationships in DB-agnostic way**: One-to-one, one-to-many and many-to-many relationships declared in DB-agnostic ways are automatically being taken care of by the underlying StorageBackend on creation.
 - **MongoDB-style querying:** The .findObjects() and .findOneObject() methods of a collection take MongoDB-style queries, which will then be translated by the underlying StorageBackend.
@@ -93,7 +100,6 @@ At present, these features are implemented and tested:
 
 The following items are on the roadmap in no particular order:
 
-- [Sequelize backend allowing your code to run in MySQL, PostgreSQL, MSSQL and SQLite](https://github.com/WorldBrain/storex/issues/2): [Already written](https://github.com/WorldBrain/memex-root-server/tree/master/src/components/storage/backend/sequelize), but waiting to be factored out, this allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
 - [DB-agnostic data migrations](https://github.com/WorldBrain/storex/issues/3): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
 - [Relationship fetching & filtering](https://github.com/WorldBrain/storex/issues/4): This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases. Also, you could filter by relationships, like `collection('user').findObjects({'email.active': true})`.
 - [API server and consumer](https://github.com/WorldBrain/storex/issues/5): Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.

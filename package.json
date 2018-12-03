@@ -33,7 +33,7 @@
     "@types/chai": "^4.0.6",
     "@types/events": "^1.2.0",
     "@types/mocha": "^2.2.44",
-    "@types/node": "^10.11.0",
+    "@types/node": "^10.12.11",
     "chai": "^4.1.2",
     "expect": "^23.5.0",
     "mocha": "^4.0.1",
