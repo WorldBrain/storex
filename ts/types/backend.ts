@@ -3,7 +3,7 @@ import { StorageBackendFeatureSupport } from "./backend-features";
 
 export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
-export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions
+export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions & {fields?: string[]}
 export type FindManyOptions = FindSingleOptions & PaginationOptions
 export type CountOptions = DBNameOptions & IgnoreCaseOptions
 export type UpdateManyOptions = DBNameOptions
