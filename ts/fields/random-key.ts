@@ -1,6 +1,6 @@
 import * as bluebird from 'bluebird'
 import * as rawRandomBytes from 'randombytes'
-const randomBytes = bluebird.promisify(rawRandomBytes)
+const randomBytes = rawRandomBytes.default || rawRandomBytes
 import { PrimitiveFieldType } from '../types'
 import { Field } from './types'
 
@@ -8,7 +8,7 @@ export class RandomKeyField extends Field {
     primitiveType = <PrimitiveFieldType>'string'
     length = 20
 
-    async prepareForStorage(input) : Promise<string> {
+    async prepareForStorage(input): Promise<string> {
         if (input) {
             return input
         }
@@ -17,7 +17,9 @@ export class RandomKeyField extends Field {
     }
 
     async generateCode() {
-        const bytes = (await randomBytes(this.length));
+        const bytes = (await new Promise((resolve, reject) => {
+            randomBytes(this.length, (err, result) => err ? reject(err) : resolve(result))
+        })) as any
         return bytes.toString('hex')
     }
 }
