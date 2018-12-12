@@ -22,6 +22,7 @@ export interface RegistryCollectionsVersionMap {
 export default class StorageRegistry extends EventEmitter {
     public collections: RegistryCollections = {}
     public collectionsByVersion: RegistryCollectionsVersionMap = {}
+    public collectionVersionMap: {[name : string] : RegistryCollections} = {}
     public fieldTypes : FieldTypeRegistry
 
     constructor({fieldTypes} : {fieldTypes : FieldTypeRegistry}) {
@@ -48,6 +49,9 @@ export default class StorageRegistry extends EventEmitter {
             this.collectionsByVersion[version] =
                 this.collectionsByVersion[version] || []
             this.collectionsByVersion[version].push(def)
+
+            this.collectionVersionMap[version] = this.collectionVersionMap[version] || {}
+            this.collectionVersionMap[version][name] = def
         })
 
         this.emit('registered-collection', {collection: this.collections[name]})
