@@ -20,10 +20,26 @@ export type ReverseOptions = {reverse? : boolean}
 export type DBNameOptions = {database? : string}
 export type PaginationOptions = {limit? : number, skip? : number}
 
+const PLUGGABLE_CORE_OPERATIONS = new Set([
+    'alterSchema'
+])
+const IDENTIFIER_REGEX = /(?:([a-zA-Z]+)(\:))?(?:([a-zA-Z]+)(\.))?([a-zA-Z]+)/
+export function _parseIdentifier(identifier : string) {
+    const parts = IDENTIFIER_REGEX.exec(identifier)
+    return {
+        project: parts[1] || null,
+        backend: parts[3] || null,
+        operation: parts[5],
+    }
+}
+
 export abstract class StorageBackend {
+    readonly type : string
+    readonly pluggableOperations : Set<string> = new Set()
     protected features : StorageBackendFeatureSupport = {}
     protected customFeatures : {[name : string]: true} = {}
     protected registry : StorageRegistry
+    private operations = {}
 
     configure({registry} : {registry : StorageRegistry}) {
         this.registry = registry
@@ -34,6 +50,10 @@ export abstract class StorageBackend {
                 throw new Error(`Custom storage backend features must be namespaced with a '.', e.g. 'dexie.getVersionHistory'`)
             }
         }
+    }
+
+    use(plugin : StorageBackendPlugin) {
+        plugin.install(this)
     }
 
     async cleanup() : Promise<any> {}
@@ -87,6 +107,9 @@ export abstract class StorageBackend {
     }
 
     async operation(operation : string, ...args) {
+        if (this.operations[operation]) {
+            return await this.operations[operation](...args)
+        }
         if (!this.supports(operation)) {
             throw new Error(`Unsupported storage backend operation: ${operation}`)
         }
@@ -94,4 +117,32 @@ export abstract class StorageBackend {
         const parts = operation.split('.')
         return await this[parts.length === 1 ? parts[0] : parts[1]](...args)
     }
+
+    registerOperation(identifier : string, operation : (...args) => Promise<any>) {
+        _validateOperationRegistration(identifier, this)
+
+        this.operations[identifier] = operation
+    }
+}
+
+export class StorageBackendPlugin<Backend extends StorageBackend = StorageBackend> {
+    public backend : Backend
+
+    install(backend : StorageBackend) {
+        this.backend = backend as Backend
+    }
+}
+
+export function _validateOperationRegistration(identifier, backend : StorageBackend) {
+    const parsedIdentifier = _parseIdentifier(identifier)
+    if (!parsedIdentifier.project) {
+        if (!parsedIdentifier.backend && !PLUGGABLE_CORE_OPERATIONS.has(identifier)) {
+           throw new Error(`Cannot register non-standard top-level operation '${identifier}'`)
+        }
+        if (parsedIdentifier.backend && !backend.pluggableOperations.has(parsedIdentifier.operation)) {
+           throw new Error(`Cannot register non-standard backend-specific operation '${identifier}'`)
+        }
+    }
+
+    return true
 }
