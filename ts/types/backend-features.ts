@@ -1,4 +1,5 @@
 export interface StorageBackendFeatureSupport {
+  transaction? : boolean
   count? : boolean
   ignoreCase? : boolean
   fullTextSearch? : boolean

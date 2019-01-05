@@ -20,6 +20,16 @@ export type ReverseOptions = {reverse? : boolean}
 export type DBNameOptions = {database? : string}
 export type PaginationOptions = {limit? : number, skip? : number}
 
+const CORE_OPERATIONS = new Set([
+    'createObject',
+    'findObject',
+    'findObjects',
+    'countObjects',
+    'updateObject',
+    'updateObjects',
+    'deleteObject',
+    'deleteObjects',
+])
 const PLUGGABLE_CORE_OPERATIONS = new Set([
     'alterSchema'
 ])
@@ -34,7 +44,7 @@ export function _parseIdentifier(identifier : string) {
 }
 
 export abstract class StorageBackend {
-    readonly type : string
+    readonly type : string = null
     readonly pluggableOperations : Set<string> = new Set()
     protected features : StorageBackendFeatureSupport = {}
     protected customFeatures : {[name : string]: true} = {}
@@ -52,7 +62,7 @@ export abstract class StorageBackend {
         }
     }
 
-    use(plugin : StorageBackendPlugin) {
+    use(plugin : StorageBackendPlugin<any>) {
         plugin.install(this)
     }
 
@@ -103,7 +113,7 @@ export abstract class StorageBackend {
     }
 
     supports(feature : string) {
-        return !!this.features[feature] || !!this.customFeatures[feature]
+        return CORE_OPERATIONS.has(feature) || !!this.features[feature] || !!this.customFeatures[feature]
     }
 
     async operation(operation : string, ...args) {
@@ -125,11 +135,11 @@ export abstract class StorageBackend {
     }
 }
 
-export class StorageBackendPlugin<Backend extends StorageBackend = StorageBackend> {
+export class StorageBackendPlugin<Backend> {
     public backend : Backend
 
-    install(backend : StorageBackend) {
-        this.backend = backend as Backend
+    install(backend : Backend) {
+        this.backend = backend as any as Backend
     }
 }
 
