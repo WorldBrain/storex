@@ -11,7 +11,7 @@ describe('StorageBackend utils', () => {
                 return `${collection}-${(++ids[collection]).toString()}`
             }
         })
-        const storageManager = createTestStorageManager(backend)
+        const storageManager = await createTestStorageManager(backend)
 
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
         const { object: user } = await storageManager.collection('user').createObject(generateTestObject({email, passwordHash, expires}))

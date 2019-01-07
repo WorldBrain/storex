@@ -1,5 +1,6 @@
 import StorageRegistry from "../registry"
 import { StorageBackendFeatureSupport } from "./backend-features";
+import { isRelationshipReference } from "./relationships";
 
 export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
@@ -97,8 +98,17 @@ export abstract class StorageBackend {
         const definition = this.registry.collections[collection]
         if (typeof definition.pkIndex === 'string') {
             return await this.updateObjects(collection, {[definition.pkIndex]: object[definition.pkIndex]}, updates, options)
+        } else if (definition.pkIndex instanceof Array) {
+            const where = {}
+            for (let pkField of definition.pkIndex) {
+                if (isRelationshipReference(pkField)) {
+                    throw new Error('Updating single objects with relation pks is not supported yet')
+                }
+                where[pkField] = object[pkField]
+            }
+            return await this.updateObjects(collection, where, updates, options)
         } else {
-            throw new Error('Updating single objects with compound pks is not supported yet')
+            throw new Error('Updating single objects with relation pks is not supported yet')
         }
     }
 

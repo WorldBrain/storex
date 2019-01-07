@@ -2,7 +2,7 @@ import * as expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend } from './types'
 
-export function createTestStorageManager(backend: StorageBackend) {
+export async function createTestStorageManager(backend: StorageBackend) {
     const storageManager = new StorageManager({ backend })
     storageManager.registry.registerCollections({
         user: {
@@ -104,7 +104,7 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
 
     beforeEach(async () => {
         backend = await backendCreator()
-        storageManager = createTestStorageManager(backend)
+        storageManager = await createTestStorageManager(backend)
         await backend.migrate()
     })
 
