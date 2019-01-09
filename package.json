@@ -1,6 +1,6 @@
 {
   "name": "@worldbrain/storex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Storex core module - a storage layer without assumptions",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -21,8 +21,8 @@
   ],
   "author": "Vincent den Boer",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/WorldBrain/storex.git"
+    "type": "git",
+    "url": "https://github.com/WorldBrain/storex.git"
   },
   "dependencies": {
     "event-emitter": "^0.3.5",
