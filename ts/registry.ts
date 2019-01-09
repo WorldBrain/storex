@@ -63,7 +63,7 @@ export default class StorageRegistry extends EventEmitter {
         }
     }
 
-    _finishInitialization() {
+    finishInitialization() {
         this._connectReverseRelationships()
         return Promise.all(
             this.listeners('initialized').map(

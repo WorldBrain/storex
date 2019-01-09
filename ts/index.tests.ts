@@ -34,7 +34,7 @@ export async function createTestStorageManager(backend: StorageBackend) {
             version: new Date(2018, 7, 31),
             fields: {
                 code: { type: 'random-key' },
-                expiry: { type: 'datetime' }
+                expiry: { type: 'datetime', optional: true }
             },
             relationships: [
                 { singleChildOf: 'userEmail', reverseAlias: 'verificationCode' }
