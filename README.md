@@ -106,7 +106,7 @@ The following items are on the roadmap in no particular order:
 - [Unified access control definition](https://github.com/WorldBrain/storex/issues/6): Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
 - **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
 - **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
-- **Synching back-end for offline-first applications:** An aggragente back-end which intelligently writes to a client-side database first, and syncs with the server when possible.
+- [Synching functionality for offline-first and p2p applications](https://github.com/WorldBrain/storex/issues/8)
 - **Composite back-end writing to multiple back-ends at once:** When you're switching databases or cloud providers, there may be period where your application needs to the exact same data to multiple database systems at once.
 - **Assisting migrations from one database to another:** Creating standard procedures allowing copying data from one database to another with any paradigm translations that might be needed.
 - **Server-side full-text search server integration":** Allow for example to store your data in MondoDB, but your full-text index in ElasticSearch.
