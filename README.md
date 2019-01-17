@@ -7,13 +7,13 @@ Installation
 
 Storex is a collection of Node.js modules (written in TypeScript) available through NPM, meant to be used both client- and server-side. To start, you need the core and a backend:
 ```
-$ npm install storex --save
+$ npm install @worldbrain/storex --save
 
 $ # For a client-side DB
-$ npm install storex-backend-dexie --save # IndexedDB through Dexie library
+$ npm install @worldbrain/storex-backend-dexie --save # IndexedDB through Dexie library
 
 $ # For a server-side SQL DB
-$ npm install storex-backend-sequelize --save # MySQL, PostgreSQL, SQLite, MSSQL through Sequelize
+$ npm install @worldbrain/storex-backend-sequelize --save # MySQL, PostgreSQL, SQLite, MSSQL through Sequelize
 
 ```
 

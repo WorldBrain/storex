@@ -62,7 +62,7 @@ export async function createTestStorageManager(backend: StorageBackend) {
             ]
         }
     })
-    storageManager.finishInitialization()
+    await storageManager.finishInitialization()
 
     return storageManager
 }
