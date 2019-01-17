@@ -7,7 +7,6 @@
   "scripts": {
     "prepare": "tsc",
     "prepare:watch": "npm run prepare -- -w",
-    "prepublishOnly": "npm run prepare",
     "test:jest": "jest --verbose --config=.jest-config.json",
     "test:jest:watch": "jest --verbose --watch --config=.jest-config.json",
     "test:mocha": "mocha --require ts-node/register 'ts/**/*.test.ts'",
