@@ -1,5 +1,7 @@
 Storex is a minimal storage layer as a foundation for easing common problems around storing and moving data around. Allowing you to describe your data layout as a graph and providing different plugins, it helps you interact with (No)SQL databases, data migration, offline first applications architecture, creating and consuming REST/GraphQL APIs, permission management, finding optimization opportunaties and more. The aim is to provide a minimalistic common ground/language for working with your data, providing packages for solving the most common problems around data, while giving you easy access to the underlying machinery to do the things that are specific to your application. Everything together that means that every problem you encounter while rapidly iterating towards a serious product, from choosing a suitable DB to suddenly realizing you need to migrate your data model, or even switch DBs, will get a ton easier because you don't have to solve them for the 109th time yourself.
 
+*This project started as the storage layer for [Memex](https://worldbrain.io/), a tool to organize your web-research for yourself and collaboratively, in collaboration with [YouAPT](https://www.youapt.eu). Download it here, and check out our vision [here](https://worldbrain.io/vision_deck).*
+
 **Status:** Proof of concept used in production to interact with IndexedDB while having the freedom to shift to the cloud and decentralize storage in the near future. Needs a lot more development, but implemented functionality is working. That being said, the API is subject to change between minor versions until the 1.0 release. Please consider contributing through easy to pick up tasks to get you started!
 
 Installation
@@ -97,23 +99,23 @@ At present, these features are implemented and tested:
 - **Client-side full-text search using Dexie backend:** By passing a stemmer into the `DexieStorageBackend({stemmer: (text : string) => Promise<string[]>})` you can full-text search text fields using the fastest client-side full-text search engine yet!
 - **Run automated storage-related tests in memory:** Using the Dexie back-end, you can pass in a fake IndexedDB implementation to run your storage in-memory for faster automated and manual testing.
 - **Version management of data models:** For each collection, you can pass in an array of different date-versioned collection versions, and you'll be able to iterate over your data model versions through time.
+- [DB-agnostic data migrations](https://github.com/WorldBrain/storex-schema-migrations): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
 
 The following items are on the roadmap in no particular order:
 
-- [DB-agnostic data migrations](https://github.com/WorldBrain/storex/issues/3): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
+- [Synching functionality for offline-first and p2p applications](https://github.com/WorldBrain/storex/issues/8)
+- [Unified access control definition](https://github.com/WorldBrain/storex/issues/6): Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
 - [Relationship fetching & filtering](https://github.com/WorldBrain/storex/issues/4): This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases. Also, you could filter by relationships, like `collection('user').findObjects({'email.active': true})`.
 - [API server and consumer](https://github.com/WorldBrain/storex/issues/5): Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
-- [Unified access control definition](https://github.com/WorldBrain/storex/issues/6): Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
 - **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
 - **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
-- [Synching functionality for offline-first and p2p applications](https://github.com/WorldBrain/storex/issues/8)
 - **Composite back-end writing to multiple back-ends at once:** When you're switching databases or cloud providers, there may be period where your application needs to the exact same data to multiple database systems at once.
 - **Assisting migrations from one database to another:** Creating standard procedures allowing copying data from one database to another with any paradigm translations that might be needed.
 - **Server-side full-text search server integration":** Allow for example to store your data in MondoDB, but your full-text index in ElasticSearch.
 - **Pre-compiled queries:** Let the backend know which kind of queries you're going to do, so the backend can optimize compilation, and you get a unified overview of how your applcation queries and manipulates data.
 - **Query analytics:** Report query performance and production usage patterns to your anaylics backend to give you insight into possible optimization opportunities (such as what kind of indices to create.)
 
-Also, Storex was built with decentralization in mind. The first available backend is Dexie, which allows you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
+Also, Storex was built with decentralization in mind. The first available backends are Dexie and Sequelize, which allow you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
 
 Contributing
 ============
