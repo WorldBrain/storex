@@ -22,7 +22,7 @@ How it works
 You initialize a StorageBackend imported from its respective package:
 
 ```
-import { DexieStorageBackend } from 'storex-backend-dexie'
+import { DexieStorageBackend } from '@worldbrain/storex-backend-dexie'
 const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
 ```
 
@@ -54,3 +54,6 @@ In-depth documentation
 * [Defining collections](./collections.md): This is about the steps above where you interact with storageManager.registry, describing the various options for your collections, fields and relationships.
 * [Interacting with data](./operations): How to query and manipulate your data.
 * [Introspecting collections](./registry.md): How you can use the available meta-data about your data in your applications and when writing a back-end.
+* [Using and writing plugins](./plugins.md): Backend-specific operations are implemented using plugins. Read how to use and write them here.
+* [Performing schema migrations](https://github.com/WorldBrain/storex-schema-migrations): Safely and DB-agnosticly migrate your data as your schema changes
+* [Visualizing your data schema](https://github.com/WorldBrain/storex-visualize-graphviz): Still very primitive, but this generates a DOT file you can render with GraphViz of your data schema
