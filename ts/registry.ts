@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events'
+import * as fromPairs from 'lodash/fromPairs'
+import * as sortBy from 'lodash/sortBy'
 import * as pluralize from 'pluralize'
 import {
     isConnectsRelationship,
@@ -19,10 +21,16 @@ export interface RegistryCollectionsVersionMap {
     [collVersion: number]: CollectionDefinition[]
 }
 
+export type SchemaHistory = SchemaHistoryEntry[]
+export interface SchemaHistoryEntry {
+    version: Date
+    collections: RegistryCollections
+}
+
 export default class StorageRegistry extends EventEmitter {
     public collections: RegistryCollections = {}
-    public collectionsByVersion: RegistryCollectionsVersionMap = {}
-    public collectionVersionMap: {[name : string] : RegistryCollections} = {}
+    public _collectionsByVersion: RegistryCollectionsVersionMap = {}
+    public _collectionVersionMap: {[name : string] : RegistryCollections} = {}
     public fieldTypes : FieldTypeRegistry
 
     constructor({fieldTypes} : {fieldTypes : FieldTypeRegistry}) {
@@ -39,6 +47,7 @@ export default class StorageRegistry extends EventEmitter {
         defs.sort(def => def.version.getTime()).forEach(def => {
             this.collections[name] = def
             def.name = name
+            def.indices = def.indices || []
 
             this._preprocessFieldTypes(def)
             this._autoAssignCollectionPk(def)
@@ -46,12 +55,12 @@ export default class StorageRegistry extends EventEmitter {
             this._preprocessCollectionIndices(name, def)
 
             const version = def.version.getTime()
-            this.collectionsByVersion[version] =
-                this.collectionsByVersion[version] || []
-            this.collectionsByVersion[version].push(def)
+            this._collectionsByVersion[version] =
+                this._collectionsByVersion[version] || []
+            this._collectionsByVersion[version].push(def)
 
-            this.collectionVersionMap[version] = this.collectionVersionMap[version] || {}
-            this.collectionVersionMap[version][name] = def
+            this._collectionVersionMap[version] = this._collectionVersionMap[version] || {}
+            this._collectionVersionMap[version][name] = def
         })
 
         this.emit('registered-collection', {collection: this.collections[name]})
@@ -63,13 +72,38 @@ export default class StorageRegistry extends EventEmitter {
         }
     }
 
-    finishInitialization() {
+    async finishInitialization() {
         this._connectReverseRelationships()
         return Promise.all(
             this.listeners('initialized').map(
                 list => list.call(this),
             ),
         )
+    }
+
+    get collectionVersionMap() {
+        this._deprecationWarning('StorageRegistry.collectionVersionMap is deprecated, use StorageRegistry.getCollectionsByVersion() instead')
+        return this._collectionVersionMap
+    }
+
+    getCollectionsByVersion(version : Date) : RegistryCollections {
+        return this._collectionVersionMap[version.getTime()]
+    }
+
+    get collectionsByVersion() {
+        this._deprecationWarning('StorageRegistry.collectionsByVersion is deprecated, use StorageRegistry.getSchemaHistory() instead')
+        return this._collectionsByVersion
+    }
+
+    getSchemaHistory() : SchemaHistory {
+        const entries = Object.entries(this._collectionsByVersion)
+        const sorted = sortBy(entries, ([version]) => parseInt(version))
+        return sorted.map(([version, collectionsArray]) => {
+            const collections = fromPairs(collectionsArray.map(
+                collection => [collection.name, collection]
+            ))
+            return {version: new Date(parseInt(version)), collections}
+        })
     }
 
     _preprocessFieldTypes(def: CollectionDefinition) {
@@ -195,5 +229,9 @@ export default class StorageRegistry extends EventEmitter {
                 }
             }
         })
+    }
+
+    _deprecationWarning(message) {
+        console.warn(`DEPRECATED: ${message}`)
     }
 }
