@@ -21,7 +21,7 @@ export type ReverseOptions = {reverse? : boolean}
 export type DBNameOptions = {database? : string}
 export type PaginationOptions = {limit? : number, skip? : number}
 
-const CORE_OPERATIONS = new Set([
+export const COLLECTION_OPERATIONS = new Set([
     'createObject',
     'findObject',
     'findObjects',
@@ -31,6 +31,7 @@ const CORE_OPERATIONS = new Set([
     'deleteObject',
     'deleteObjects',
 ])
+const CORE_OPERATIONS = COLLECTION_OPERATIONS
 const PLUGGABLE_CORE_OPERATIONS = new Set([
     'alterSchema'
 ])

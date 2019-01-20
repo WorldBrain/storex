@@ -1,3 +1,4 @@
+import * as fromPairs from 'lodash/fromPairs'
 import StorageRegistry from './registry'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 import {
@@ -15,6 +16,7 @@ import {
     DeleteManyResult,
     UpdateSingleResult,
     UpdateManyResult,
+    COLLECTION_OPERATIONS,
 } from './types'
 
 export { default as StorageRegistry } from './registry'
@@ -48,17 +50,11 @@ export default class StorageManager {
         return this.registry.finishInitialization()
     }
 
-    collection(name : string) : StorageCollection {
-        return {
-            createObject: (object) => this.backend.createObject(name, object),
-            findOneObject: (query, options?) => this.backend.findObject(name, query, options),
-            findObjects: (query, options?) => this.backend.findObjects(name, query, options),
-            countObjects: (query, options?) => this.backend.countObjects(name, query, options),
-            updateOneObject: (object, options?) => this.backend.updateObject(name, object, options),
-            updateObjects: (query, options?) => this.backend.updateObjects(name, query, options),
-            deleteOneObject: (object, options?) => this.backend.deleteObject(name, object, options),
-            deleteObjects: (query, options?) => this.backend.deleteObjects(name, query, options),
-        }
+    collection(collectionName : string) : StorageCollection {
+        const operation = operationName => (...args) => this.backend.operation(operationName, collectionName, ...args)
+        return fromPairs(Array.from(COLLECTION_OPERATIONS).map(
+            operationName => [operationName, operation(operationName)]
+        ))
     }
 }
 
