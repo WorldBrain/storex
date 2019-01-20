@@ -87,6 +87,14 @@ Further documentation
 
 You can [find the docs here](./docs/0-start-here.md). Also, we'll be writing more and more automated tests which also serve as documentation.
 
+Storex ecosystem
+================
+
+The power of Storex comes from having modular packages that can be recombined in different contexts based on the core 'language' or patterns Storex provides to talk about data. Officially supported packages will be included in the `@worldbrain` npm namespace. This helps us to endorse patterns that emerge throughout the ecosystem in a controlled, collectively governed way. These are the currently supported packages:
+
+* [Schema migrations](https://github.com/WorldBrain/storex-schema-migrations): The functionality you need, provided in a modular and adaptable way, to handle schema and data migration as your application evolved. Written with a diverse context in mind, like generating SQL scripts for DBAs, running migration in Serverless environments, converting exported data on import, etc.
+* [Schema visualization using Graphviz](https://github.com/WorldBrain/storex-visualize-graphviz): Still in its infancy, this creates a GraphViz DOT files showing you the relationships between your collections.
+
 Status and future development
 =============================
 
