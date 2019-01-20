@@ -18,6 +18,7 @@ import {
     UpdateManyResult,
     COLLECTION_OPERATIONS,
 } from './types'
+import OperationRegistry from './operations';
 
 export { default as StorageRegistry } from './registry'
 
@@ -38,12 +39,14 @@ export interface StorageCollectionMap {
 
 export default class StorageManager {
     public registry : StorageRegistry
+    public operationRegistry : OperationRegistry
     public backend : StorageBackend
 
     constructor({backend, fieldTypes} : {backend : StorageBackend, fieldTypes? : FieldTypeRegistry}) {
         this.registry = new StorageRegistry({fieldTypes: fieldTypes || createDefaultFieldTypeRegistry()})
+        this.operationRegistry = this.operationRegistry
         this.backend = backend
-        this.backend.configure({registry: this.registry})
+        this.backend.configure({registry: this.registry, operationRegistry: this.operationRegistry})
     }
 
     finishInitialization() {

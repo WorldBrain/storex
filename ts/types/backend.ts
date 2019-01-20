@@ -1,6 +1,7 @@
 import StorageRegistry from "../registry"
 import { StorageBackendFeatureSupport } from "./backend-features";
 import { isRelationshipReference } from "./relationships";
+import OperationRegistry from "../operations";
 
 export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
@@ -51,10 +52,12 @@ export abstract class StorageBackend {
     protected features : StorageBackendFeatureSupport = {}
     protected customFeatures : {[name : string]: true} = {}
     protected registry : StorageRegistry
+    protected operationRegistry : OperationRegistry
     private operations = {}
 
-    configure({registry} : {registry : StorageRegistry}) {
+    configure({registry, operationRegistry} : {registry : StorageRegistry, operationRegistry : OperationRegistry}) {
         this.registry = registry
+        this.operationRegistry = operationRegistry
 
         // TODO: Compile this away in production builds
         for (const key of Object.keys(this.customFeatures)) {
@@ -128,6 +131,9 @@ export abstract class StorageBackend {
     }
 
     async operation(operation : string, ...args) {
+        if (operation.indexOf('operation:') === 0) {
+            return this.executeRegisteredOperation(operation, args[0])
+        }
         if (this.operations[operation]) {
             return await this.operations[operation](...args)
         }
@@ -143,6 +149,10 @@ export abstract class StorageBackend {
         _validateOperationRegistration(identifier, this)
 
         this.operations[identifier] = operation
+    }
+
+    executeRegisteredOperation(id : string, vars : {[id : string] : any}) {
+        
     }
 }
 
