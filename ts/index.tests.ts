@@ -1,9 +1,10 @@
 import * as expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend } from './types'
+import { StorageMiddleware } from './types/middleware';
 
-export async function createTestStorageManager(backend: StorageBackend) {
-    const storageManager = new StorageManager({ backend })
+export async function createTestStorageManager(backend: StorageBackend, {middleware} : {middleware? : StorageMiddleware[]} = {}) {
+    const storageManager = new StorageManager({ backend, middleware })
     storageManager.registry.registerCollections({
         user: {
             version: new Date(2018, 7, 31),

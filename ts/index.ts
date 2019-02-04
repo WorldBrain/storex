@@ -18,6 +18,7 @@ import {
     UpdateManyResult,
     COLLECTION_OPERATIONS,
 } from './types'
+import { StorageMiddleware } from './types/middleware';
 
 export { default as StorageRegistry } from './registry'
 
@@ -50,11 +51,14 @@ const COLLECTION_OPERATION_ALIASES = {
 export default class StorageManager {
     public registry: StorageRegistry
     public backend: StorageBackend
+    private _middleware : StorageMiddleware[]
 
-    constructor({ backend, fieldTypes }: { backend: StorageBackend, fieldTypes?: FieldTypeRegistry }) {
+    constructor({ backend, middleware = [], fieldTypes }: { backend: StorageBackend, middleware? : StorageMiddleware[], fieldTypes?: FieldTypeRegistry }) {
         this.registry = new StorageRegistry({ fieldTypes: fieldTypes || createDefaultFieldTypeRegistry() })
         this.backend = backend
         this.backend.configure({ registry: this.registry })
+        this._middleware = middleware
+        this._middleware.reverse()
     }
 
     finishInitialization() {
@@ -62,7 +66,7 @@ export default class StorageManager {
     }
 
     collection(collectionName: string): StorageCollection {
-        const operation = operationName => (...args) => this.backend.operation(operationName, collectionName, ...args)
+        const operation = operationName => (...args) => this.operation(operationName, collectionName, ...args)
         return fromPairs([
             ...Array.from(COLLECTION_OPERATIONS).map(
                 operationName => [operationName, operation(operationName)]
@@ -71,6 +75,16 @@ export default class StorageManager {
                 ([alias, target]) => [alias, operation(target)]
             )
         ])
+    }
+
+    async operation(operationName : string, ...args) {
+        let next = {process: ({operation}) => this.backend.operation(operation[0], ...operation.slice(1))}
+        for (const middleware of this._middleware) {
+            const currentNext = next
+            next = {process: args => middleware.process({...args, next: currentNext})}
+        }
+
+        return next.process({operation: [operationName, ...args]})
     }
 }
 
