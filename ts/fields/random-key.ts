@@ -1,4 +1,3 @@
-import * as bluebird from 'bluebird'
 import * as rawRandomBytes from 'randombytes'
 const randomBytes = rawRandomBytes.default || rawRandomBytes
 import { PrimitiveFieldType } from '../types'
