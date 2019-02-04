@@ -1,5 +1,5 @@
-import * as internalPluralize from 'pluralize'
+const internalPluralize = require('pluralize')
 
-export function pluralize(singular : string) {
+export function pluralize(singular: string) {
     return internalPluralize(singular)
 }

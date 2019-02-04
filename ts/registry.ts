@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
-import * as fromPairs from 'lodash/fromPairs'
-import * as sortBy from 'lodash/sortBy'
-import * as pluralize from 'pluralize'
+const fromPairs = require('lodash/fromPairs')
+const sortBy = require('lodash/sortBy')
+const pluralize = require('pluralize')
 import {
     isConnectsRelationship,
     isChildOfRelationship,
@@ -30,10 +30,10 @@ export interface SchemaHistoryEntry {
 export default class StorageRegistry extends EventEmitter {
     public collections: RegistryCollections = {}
     public _collectionsByVersion: RegistryCollectionsVersionMap = {}
-    public _collectionVersionMap: {[name : string] : RegistryCollections} = {}
-    public fieldTypes : FieldTypeRegistry
+    public _collectionVersionMap: { [name: string]: RegistryCollections } = {}
+    public fieldTypes: FieldTypeRegistry
 
-    constructor({fieldTypes} : {fieldTypes : FieldTypeRegistry}) {
+    constructor({ fieldTypes }: { fieldTypes: FieldTypeRegistry }) {
         super()
 
         this.fieldTypes = fieldTypes
@@ -63,10 +63,10 @@ export default class StorageRegistry extends EventEmitter {
             this._collectionVersionMap[version][name] = def
         })
 
-        this.emit('registered-collection', {collection: this.collections[name]})
+        this.emit('registered-collection', { collection: this.collections[name] })
     }
 
-    registerCollections(collections : CollectionDefinitionMap) {
+    registerCollections(collections: CollectionDefinitionMap) {
         for (const [name, def] of Object.entries(collections)) {
             this.registerCollection(name, def)
         }
@@ -86,7 +86,7 @@ export default class StorageRegistry extends EventEmitter {
         return this._collectionVersionMap
     }
 
-    getCollectionsByVersion(version : Date) : RegistryCollections {
+    getCollectionsByVersion(version: Date): RegistryCollections {
         return this._collectionVersionMap[version.getTime()]
     }
 
@@ -95,14 +95,14 @@ export default class StorageRegistry extends EventEmitter {
         return this._collectionsByVersion
     }
 
-    getSchemaHistory() : SchemaHistory {
+    getSchemaHistory(): SchemaHistory {
         const entries = Object.entries(this._collectionsByVersion)
         const sorted = sortBy(entries, ([version]) => parseInt(version))
         return sorted.map(([version, collectionsArray]) => {
             const collections = fromPairs(collectionsArray.map(
                 collection => [collection.name, collection]
             ))
-            return {version: new Date(parseInt(version)), collections}
+            return { version: new Date(parseInt(version)), collections }
         })
     }
 
@@ -125,14 +125,14 @@ export default class StorageRegistry extends EventEmitter {
      * Handles mutating a collection's definition to flag all fields that are declared to be
      * indexable as indexed fields.
      */
-    _preprocessCollectionIndices(collectionName : string, def: CollectionDefinition) {
-        const flagField = (fieldName : string, indexDefIndex : number) => {
+    _preprocessCollectionIndices(collectionName: string, def: CollectionDefinition) {
+        const flagField = (fieldName: string, indexDefIndex: number) => {
             if (!def.fields[fieldName]) {
                 throw new Error(`Flagging field ${fieldName} of collection ${collectionName} as index, but field does not exist`)
             }
             def.fields[fieldName]._index = indexDefIndex
         }
-        const flagIndexSourceField = (indexSource: IndexSourceField, indexDefIndex : number) => {
+        const flagIndexSourceField = (indexSource: IndexSourceField, indexDefIndex: number) => {
             if (isRelationshipReference(indexSource)) {
                 const relationship = def.relationshipsByAlias[indexSource.relationship]
                 if (isConnectsRelationship(relationship)) {
@@ -149,11 +149,11 @@ export default class StorageRegistry extends EventEmitter {
         indices.forEach(({ field: indexSourceFields, pk: isPk }, indexDefIndex) => {
             // Compound indexes need to flag all specified fields
             if (indexSourceFields instanceof Array) {
-                indexSourceFields.forEach(indexSource => {flagIndexSourceField(indexSource, indexDefIndex)})
+                indexSourceFields.forEach(indexSource => { flagIndexSourceField(indexSource, indexDefIndex) })
             } else if (typeof indexSourceFields === 'string') {
                 flagField(indexSourceFields, indexDefIndex)
             } else {
-                throw Error('Got an invalid index for this collection: '+ collectionName)
+                throw Error('Got an invalid index for this collection: ' + collectionName)
             }
         })
     }
@@ -166,18 +166,18 @@ export default class StorageRegistry extends EventEmitter {
             }
         })
         if (!def.pkIndex) {
-            indices.unshift({field: 'id', pk: true})
+            indices.unshift({ field: 'id', pk: true })
             def.pkIndex = 'id'
         }
         if (typeof def.pkIndex === 'string' && !def.fields[def.pkIndex]) {
-            def.fields[def.pkIndex] = {type: 'auto-pk'}
+            def.fields[def.pkIndex] = { type: 'auto-pk' }
         }
     }
 
     /**
      * Creates the fields and indices for relationships
      */
-    _preprocessCollectionRelationships(name : string, def: CollectionDefinition) {
+    _preprocessCollectionRelationships(name: string, def: CollectionDefinition) {
         def.relationships = def.relationships || []
         def.relationshipsByAlias = {}
         def.reverseRelationshipsByAlias = {}
@@ -188,15 +188,15 @@ export default class StorageRegistry extends EventEmitter {
                     `${relationship.aliases[0]}Rel`,
                     `${relationship.aliases[1]}Rel`
                 ]
-                
+
                 relationship.reverseAliases = relationship.reverseAliases || [
                     pluralize(relationship.connects[1]),
                     pluralize(relationship.connects[0]),
                 ]
 
-                def.fields[relationship.fieldNames[0]] = {type: 'foreign-key'}
-                def.fields[relationship.fieldNames[1]] = {type: 'foreign-key'}
-                def.indices.push({field: relationship.fieldNames})
+                def.fields[relationship.fieldNames[0]] = { type: 'foreign-key' }
+                def.fields[relationship.fieldNames[1]] = { type: 'foreign-key' }
+                def.indices.push({ field: relationship.fieldNames })
             } else if (isChildOfRelationship(relationship)) {
                 relationship.sourceCollection = name
                 relationship.targetCollection = getChildOfRelationshipTarget(relationship)
@@ -209,8 +209,8 @@ export default class StorageRegistry extends EventEmitter {
                 }
 
                 relationship.fieldName = relationship.fieldName || `${relationship.alias}Rel`
-                def.fields[relationship.fieldName] = {type: 'foreign-key'}
-                def.indices.push({field: relationship.fieldName})
+                def.fields[relationship.fieldName] = { type: 'foreign-key' }
+                def.indices.push({ field: relationship.fieldName })
             } else {
                 throw new Error("Invalid relationship detected: " + JSON.stringify(relationship))
             }

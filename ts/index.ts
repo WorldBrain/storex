@@ -1,4 +1,4 @@
-import * as fromPairs from 'lodash/fromPairs'
+const fromPairs = require('lodash/fromPairs')
 import StorageRegistry from './registry'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
 import {
