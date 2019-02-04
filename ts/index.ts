@@ -22,10 +22,12 @@ import {
 export { default as StorageRegistry } from './registry'
 
 export interface StorageCollection {
-    createObject(object, options? : CreateSingleOptions) : Promise<CreateSingleResult>
-    findOneObject<T>(query, options?: FindSingleOptions) : Promise<T | null>
-    findObjects<T>(query, options?: FindManyOptions) : Promise<Array<T>>
-    countObjects(query, options?: CountOptions) : Promise<number>
+    createObject(object, options?: CreateSingleOptions): Promise<CreateSingleResult>
+    findOneObject<T>(query, options?: FindSingleOptions): Promise<T | null>
+    findObject<T>(query, options?: FindSingleOptions): Promise<T | null>
+    findObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
+    findAllObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
+    countObjects(query, options?: CountOptions): Promise<number>
     updateOneObject(object, updates, options?: UpdateSingleOptions): Promise<UpdateSingleResult>
     updateObjects(query, updates, options?: UpdateManyOptions): Promise<UpdateManyResult>
     deleteOneObject(object, options?: DeleteSingleOptions): Promise<DeleteSingleResult>
@@ -33,28 +35,42 @@ export interface StorageCollection {
 }
 
 export interface StorageCollectionMap {
-    [name : string] : StorageCollection
+    [name: string]: StorageCollection
+}
+
+const COLLECTION_OPERATION_ALIASES = {
+    findOneObject: 'findObject',
+    findAllObjects: 'findObjects',
+    updateOneObject: 'updateObject',
+    updateAllObject: 'updateObjects',
+    deleteOneObject: 'deleteObject',
+    deleteAllObjects: 'deleteObjects',
 }
 
 export default class StorageManager {
-    public registry : StorageRegistry
-    public backend : StorageBackend
+    public registry: StorageRegistry
+    public backend: StorageBackend
 
-    constructor({backend, fieldTypes} : {backend : StorageBackend, fieldTypes? : FieldTypeRegistry}) {
-        this.registry = new StorageRegistry({fieldTypes: fieldTypes || createDefaultFieldTypeRegistry()})
+    constructor({ backend, fieldTypes }: { backend: StorageBackend, fieldTypes?: FieldTypeRegistry }) {
+        this.registry = new StorageRegistry({ fieldTypes: fieldTypes || createDefaultFieldTypeRegistry() })
         this.backend = backend
-        this.backend.configure({registry: this.registry})
+        this.backend.configure({ registry: this.registry })
     }
 
     finishInitialization() {
         return this.registry.finishInitialization()
     }
 
-    collection(collectionName : string) : StorageCollection {
+    collection(collectionName: string): StorageCollection {
         const operation = operationName => (...args) => this.backend.operation(operationName, collectionName, ...args)
-        return fromPairs(Array.from(COLLECTION_OPERATIONS).map(
-            operationName => [operationName, operation(operationName)]
-        ))
+        return fromPairs([
+            ...Array.from(COLLECTION_OPERATIONS).map(
+                operationName => [operationName, operation(operationName)]
+            ),
+            ...Object.entries(COLLECTION_OPERATION_ALIASES).map(
+                ([alias, target]) => [alias, operation(target)]
+            )
+        ])
     }
 }
 
