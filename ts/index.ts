@@ -1,43 +1,11 @@
 const fromPairs = require('lodash/fromPairs')
 import StorageRegistry from './registry'
 import { createDefaultFieldTypeRegistry, FieldTypeRegistry } from './fields'
-import {
-    StorageBackend,
-    CreateSingleOptions,
-    FindSingleOptions,
-    FindManyOptions,
-    CountOptions,
-    UpdateManyOptions,
-    UpdateSingleOptions,
-    DeleteManyOptions,
-    DeleteSingleOptions,
-    CreateSingleResult,
-    DeleteSingleResult,
-    DeleteManyResult,
-    UpdateSingleResult,
-    UpdateManyResult,
-    COLLECTION_OPERATIONS,
-} from './types'
-import { StorageMiddleware } from './types/middleware';
+import { StorageMiddleware } from './types/middleware'
+import { StorageBackend, COLLECTION_OPERATIONS } from './types/backend'
+import StorageManagerInterface, { StorageCollection } from './types/manager'
 
 export { default as StorageRegistry } from './registry'
-
-export interface StorageCollection {
-    createObject(object, options?: CreateSingleOptions): Promise<CreateSingleResult>
-    findOneObject<T>(query, options?: FindSingleOptions): Promise<T | null>
-    findObject<T>(query, options?: FindSingleOptions): Promise<T | null>
-    findObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
-    findAllObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
-    countObjects(query, options?: CountOptions): Promise<number>
-    updateOneObject(object, updates, options?: UpdateSingleOptions): Promise<UpdateSingleResult>
-    updateObjects(query, updates, options?: UpdateManyOptions): Promise<UpdateManyResult>
-    deleteOneObject(object, options?: DeleteSingleOptions): Promise<DeleteSingleResult>
-    deleteObjects(query, options?: DeleteManyOptions): Promise<DeleteManyResult>
-}
-
-export interface StorageCollectionMap {
-    [name: string]: StorageCollection
-}
 
 const COLLECTION_OPERATION_ALIASES = {
     findOneObject: 'findObject',
@@ -48,7 +16,7 @@ const COLLECTION_OPERATION_ALIASES = {
     deleteAllObjects: 'deleteObjects',
 }
 
-export default class StorageManager {
+export default class StorageManager implements StorageManagerInterface {
     public registry: StorageRegistry
     public backend: StorageBackend
     private _middleware : StorageMiddleware[]
@@ -61,8 +29,13 @@ export default class StorageManager {
         this._middleware.reverse()
     }
 
-    finishInitialization() {
-        return this.registry.finishInitialization()
+    async finishInitialization() {
+        await this.registry.finishInitialization()
+        for (const middleware of this._middleware) {
+            if (middleware.setup) {
+                middleware.setup({storageManager: this})
+            }
+        }
     }
 
     collection(collectionName: string): StorageCollection {

@@ -78,7 +78,7 @@ export default class StorageRegistry extends EventEmitter {
             this.listeners('initialized').map(
                 list => list.call(this),
             ),
-        )
+        ).then(() => {})
     }
 
     get collectionVersionMap() {
