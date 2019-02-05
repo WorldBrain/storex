@@ -25,6 +25,7 @@ export interface CollectionDefinition {
     version: Date
     fields: CollectionFields
     indices?: IndexDefinition[]
+    uniqueTogether?: string[][]
     pkIndex?: IndexSourceFields
     relationships?: Relationships
     relationshipsByAlias?: RelationshipsByAlias
