@@ -18,7 +18,7 @@ class TestSequelizeStorageBackendPlugin extends StorageBackendPlugin<SequelizeSt
 const backend = new SequelizeStorageBackend(...)
 backend.use(new TestSequelizeStorageBackendPlugin())
 const storageManager = new StorageManager({backend})
-console.log(await storageManager.operation('myproject:sequelize.doSomething', 'foo, 'bar')) // 'spam'
+console.log(await storageManager.backend.operation('myproject:sequelize.doSomething', 'foo, 'bar')) // 'spam'
 ```
 
 Operation identifiers
