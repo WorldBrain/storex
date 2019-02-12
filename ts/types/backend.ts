@@ -48,8 +48,8 @@ export function _parseIdentifier(identifier : string) {
 export abstract class StorageBackend {
     readonly type : string = null
     readonly pluggableOperations : Set<string> = new Set()
-    protected features : StorageBackendFeatureSupport = {}
-    protected customFeatures : {[name : string]: true} = {}
+    features : StorageBackendFeatureSupport = {}
+    customFeatures : {[name : string]: true} = {}
     protected registry : StorageRegistry
     private operations = {}
 

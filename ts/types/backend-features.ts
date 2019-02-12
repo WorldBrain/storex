@@ -7,4 +7,6 @@ export interface StorageBackendFeatureSupport {
   updateWithRelationships? : boolean
   relationshipFetching? : boolean
   crossRelationshipQueries? : boolean
+  executeBatch? : boolean
+  batchCreates? : boolean
 }
