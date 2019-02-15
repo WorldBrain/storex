@@ -95,3 +95,10 @@ export function convertCreateObjectDissectionToBatch(dissection : CreateObjectDi
     }
     return converted
 }
+
+export function setIn(obj, path : Array<string | number>, value) {
+    for (const part of path.slice(0, -1)) {
+        obj = obj[part]
+    }
+    obj[path.slice(-1)[0]] = value
+}

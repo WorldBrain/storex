@@ -1,7 +1,7 @@
 const expect = require('expect')
 const omit = require('lodash/omit')
 import { createTestStorageManager, generateTestObject } from './index.tests'
-import { dissectCreateObjectOperation, convertCreateObjectDissectionToBatch } from './utils';
+import { dissectCreateObjectOperation, convertCreateObjectDissectionToBatch, setIn } from './utils';
 
 describe('Create object operation dissecting', () => {
     it('should correctly dissect a createObject operation with no relationships', async () => {
@@ -144,5 +144,18 @@ describe('Converting dissected create operation to batch', () => {
                 }]
             },
         ])
+    })
+})
+
+describe('setIn()', () => {
+    it('should modify an object by path', () => {
+        const obj = {x: {foo: [{bar: 3}, {bar: 5}]}}
+        setIn(obj, ['x', 'foo', 1, 'bar'], 10)
+        expect(obj).toEqual({
+            x: {foo: [
+                {bar: 3},
+                {bar: 10}
+            ]}
+        })
     })
 })
