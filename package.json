@@ -26,7 +26,7 @@
   "dependencies": {
     "event-emitter": "^0.3.5",
     "events": "^3.0.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "pluralize": "^7.0.0",
     "randombytes": "^2.0.6",
     "source-map-support": "^0.4.18"
