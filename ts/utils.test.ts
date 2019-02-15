@@ -20,6 +20,7 @@ describe('Create object operation dissecting', () => {
                 {
                     placeholder: 1,
                     collection: 'user',
+                    path: [],
                     object: omit(testObject, 'emails'),
                     relations: {}
                 },
@@ -43,12 +44,14 @@ describe('Create object operation dissecting', () => {
                 {
                     placeholder: 1,
                     collection: 'user',
+                    path: [],
                     object: omit(testObject, 'emails'),
                     relations: {},
                 },
                 {
                     placeholder: 2,
                     collection: 'userEmail',
+                    path: ['emails', 0],
                     object: omit(testObject.emails[0], 'verificationCode'),
                     relations: {
                         user: 1
@@ -73,12 +76,14 @@ describe('Create object operation dissecting', () => {
                 {
                     placeholder: 1,
                     collection: 'user',
+                    path: [],
                     object: omit(testObject, 'emails'),
                     relations: {},
                 },
                 {
                     placeholder: 2,
                     collection: 'userEmail',
+                    path: ['emails', 0],
                     object: omit(testObject.emails[0], 'verificationCode'),
                     relations: {
                         user: 1
@@ -87,6 +92,7 @@ describe('Create object operation dissecting', () => {
                 {
                     placeholder: 3,
                     collection: 'userEmailVerificationCode',
+                    path: ['emails', 0, 'verificationCode'],
                     object: omit(testObject.emails[0].verificationCode),
                     relations: {
                         userEmail: 2

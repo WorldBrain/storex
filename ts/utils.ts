@@ -14,7 +14,7 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
     const objectsByPlaceholder = {}
     let placeholdersCreated = 0
 
-    const dissect = (collection : string, object, relations = {}) => {
+    const dissect = (collection : string, object, relations = {}, path = []) => {
         const collectionDefinition = registry.collections[collection]
         if (!collectionDefinition) {
             throw new Error(`Unknown collection: ${collection}`)
@@ -30,6 +30,7 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
             {
                 placeholder,
                 collection,
+                path,
                 object: lonelyObject,
                 relations,
             }
@@ -47,8 +48,20 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
                     toCreate = [toCreate]
                 }
                 
+                let childCount = 0
                 for (const objectToCreate of toCreate) {
-                    dissection.push(...dissect(reverseRelationship.sourceCollection, objectToCreate, {[collection]: placeholder}))
+                    const childPath = [reverseRelationshipAlias] as Array<string | number>
+                    if (!reverseRelationship.single) {
+                        childPath.push(childCount)
+                        childCount += 1
+                    }
+
+                    dissection.push(...dissect(
+                        reverseRelationship.sourceCollection,
+                        objectToCreate,
+                        {[collection]: placeholder},
+                        [...path, ...childPath]
+                    ))
                 }
             } else if (isConnectsRelationship(reverseRelationship)) {
                 if (object[reverseRelationshipAlias]) {
