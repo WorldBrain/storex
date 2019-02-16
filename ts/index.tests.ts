@@ -89,9 +89,14 @@ export function generateTestObject(
 }
 
 export function testStorageBackend(backendCreator: () => Promise<StorageBackend>, {fullTextSearch} : {fullTextSearch? : boolean} = {}) {
+    describe('Individual operations', () => {
+        testStorageBackendOperations(backendCreator)
+    })
+    
     describe('Basics with auth example', () => {
         testStorageBackendWithAuthExample(backendCreator)
     })
+
     if (fullTextSearch) {
         describe('Full text search', () => {
             testStorageBackendFullTextSearch(backendCreator)
@@ -99,21 +104,16 @@ export function testStorageBackend(backendCreator: () => Promise<StorageBackend>
     }
 }
 
-export function testStorageBackendWithAuthExample(backendCreator: () => Promise<StorageBackend>) {
-    let backend: StorageBackend
-    let storageManager: StorageManager
-
-    beforeEach(async () => {
-        backend = await backendCreator()
-        storageManager = await createTestStorageManager(backend)
+export function testStorageBackendWithAuthExample(backendCreator: () => Promise<StorageBackend>, backendCleaner?: () => Promise<void>) {
+    async function setupTest() {
+        const backend = await backendCreator()
+        const storageManager = await createTestStorageManager(backend)
         await backend.migrate()
-    })
-
-    afterEach(async () => {
-        await backend.cleanup()
-    })
+        return { storageManager }
+    }
 
     it('should do basic CRUD ops', async () => {
+        const { storageManager } = await setupTest()
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
         const { object: user } = await storageManager.collection('user').createObject(generateTestObject({ email, passwordHash, expires }))
         expect(user).toMatchObject({
@@ -140,6 +140,7 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
     })
 
     it('should handle connects relationships correctly', async () => {
+        const { storageManager } = await setupTest()
         const email = 'something@foo.com', passwordHash = 'notahash'
         const createdUser = (await storageManager.collection('user').createObject({
             identifier: `email:${email}`,
@@ -210,6 +211,324 @@ export function testStorageBackendFullTextSearch(backendCreator: () => Promise<S
                 url: 'https://www.test.com/',
                 text: 'testing this stuff is not always easy',
             }
+        ])
+    })
+}
+
+export function testStorageBackendOperations(backendCreator : () => Promise<StorageBackend>) {
+    async function setupUserAdminTest() {
+        const backend = await backendCreator()
+        const storageManager = await createTestStorageManager(backend)
+        return { backend, storageManager }
+    }
+
+    async function setupChildOfTest({userFields = null} = {}) {
+        const backend = await backendCreator()
+        const storageManager = new StorageManager({backend})
+        storageManager.registry.registerCollections({
+            user: {
+                version: new Date(2019, 1, 1),
+                fields: userFields || {
+                    displayName: {type: 'string'}
+                }
+            },
+            email: {
+                version: new Date(2019, 1, 1),
+                fields: {
+                    address: {type: 'string'}
+                },
+                relationships: [
+                    {childOf: 'user'}
+                ]
+            }
+        })
+        await storageManager.finishInitialization()
+        return { storageManager }
+    }
+
+    async function setupOperatorTest({fieldType}) {
+        const backend = await backendCreator()
+        const storageManager = new StorageManager({backend})
+        storageManager.registry.registerCollections({
+            object: {
+                version: new Date(2019, 1, 1),
+                fields: {
+                    field: {type: fieldType}
+                }
+            },
+        })
+        await storageManager.finishInitialization()
+        return { storageManager }
+    }
+
+    it('should be able to create simple objects and find them again by string pk', async () => {
+        const { storageManager } = await setupUserAdminTest()
+        const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
+        expect(object.id).not.toBe(undefined)
+        const foundObject = await storageManager.collection('user').findOneObject({id: object.id})
+        expect(foundObject).toEqual({
+            id: object.id,
+            identifier: 'email:joe@doe.com', isActive: true
+        })
+    })
+
+    it('should be able to create simple objects and find them again by string field', async () => {
+        const { storageManager } = await setupUserAdminTest()
+        const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
+        expect(object.id).not.toBe(undefined)
+        const foundObject = await storageManager.collection('user').findOneObject({identifier: 'email:joe@doe.com'})
+        expect(foundObject).toEqual({
+            id: object.id,
+            identifier: 'email:joe@doe.com', isActive: true
+        })
+    })
+
+    it('should be able to create simple objects and find them again by boolean field', async () => {
+        const { storageManager } = await setupUserAdminTest()
+        const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
+        expect(object.id).not.toBe(undefined)
+        const foundObject = await storageManager.collection('user').findOneObject({isActive: true})
+        expect(foundObject).toEqual({
+            id: object.id,
+            identifier: 'email:joe@doe.com', isActive: true
+        })
+    })
+
+    it('should be able to find by $lt operator', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 3})
+        const results = await storageManager.collection('object').findObjects({field: {$lt: 3}})
+        expect(results).toContainEqual(expect.objectContaining({field: 1}))
+        expect(results).toContainEqual(expect.objectContaining({field: 2}))
+    })
+
+    it('should be able to find by $lte operator', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 3})
+        const results = await storageManager.collection('object').findObjects({field: {$lte: 2}})
+        expect(results).toContainEqual(expect.objectContaining({field: 1}))
+        expect(results).toContainEqual(expect.objectContaining({field: 2}))
+    })
+
+    it('should be able to find by $gt operator', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 3})
+        const results = await storageManager.collection('object').findObjects({field: {$gt: 1}})
+        expect(results).toContainEqual(expect.objectContaining({field: 2}))
+        expect(results).toContainEqual(expect.objectContaining({field: 3}))
+    })
+
+    it('should be able to find by $gte operator', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 3})
+        const results = await storageManager.collection('object').findObjects({field: {$gte: 2}})
+        expect(results).toContainEqual(expect.objectContaining({field: 2}))
+        expect(results).toContainEqual(expect.objectContaining({field: 3}))
+    })
+
+    it('should be able to order results in ascending order', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'asc']]})).toEqual([
+            expect.objectContaining({field: 1}),
+            expect.objectContaining({field: 2}),
+            expect.objectContaining({field: 3}),
+        ])
+    })
+
+    it('should be able to order results in descending order', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'desc']]})).toEqual([
+            expect.objectContaining({field: 3}),
+            expect.objectContaining({field: 2}),
+            expect.objectContaining({field: 1}),
+        ])
+    })
+
+    it('should be able to limit ascending results', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'asc']], limit: 2})).toEqual([
+            expect.objectContaining({field: 1}),
+            expect.objectContaining({field: 2}),
+        ])
+    })
+
+    it('should be able to limit descending results', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'desc']], limit: 2})).toEqual([
+            expect.objectContaining({field: 3}),
+            expect.objectContaining({field: 2}),
+        ])
+    })
+
+    it('should be able to limit and skip ascending results', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 4})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'asc']], skip: 1, limit: 2})).toEqual([
+            expect.objectContaining({field: 2}),
+            expect.objectContaining({field: 3}),
+        ])
+    })
+
+    it('should be able to limit and skip descending results', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').createObject({field: 4})
+        await storageManager.collection('object').createObject({field: 1})
+        await storageManager.collection('object').createObject({field: 3})
+        expect(await storageManager.collection('object').findObjects({field: {$gte: 1}}, {order: [['field', 'desc']], skip: 1, limit: 2})).toEqual([
+            expect.objectContaining({field: 3}),
+            expect.objectContaining({field: 2}),
+        ])
+    })
+
+    it('should be able to update objects by string pk', async () => {
+        const { storageManager } = await setupUserAdminTest()
+        const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: false})
+        expect(object.id).not.toBe(undefined)
+        await storageManager.collection('user').updateOneObject({id: object.id}, {isActive: true})
+        const foundObject = await storageManager.collection('user').findOneObject({id: object.id})
+        expect(foundObject).toEqual({
+            id: object.id,
+            identifier: 'email:joe@doe.com', isActive: true
+        })
+    })
+
+    it('should be able to update objects by string field', async () => {
+        const { storageManager } = await setupUserAdminTest()
+        const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: false})
+        expect(object.id).not.toBe(undefined)
+        await storageManager.collection('user').updateObjects({identifier: 'email:joe@doe.com'}, {isActive: true})
+        const foundObject = await storageManager.collection('user').findOneObject({id: object.id})
+        expect(foundObject).toEqual({
+            id: object.id,
+            identifier: 'email:joe@doe.com', isActive: true
+        })
+    })
+
+    it('should correctly do batch operations containing only creates', async () => {
+        const { storageManager } = await setupChildOfTest()
+        const { info } = await storageManager.operation('executeBatch', [
+            {
+                placeholder: 'jane',
+                operation: 'createObject',
+                collection: 'user',
+                args: {
+                    displayName: 'Jane'
+                }
+            },
+            {
+                placeholder: 'joe',
+                operation: 'createObject',
+                collection: 'user',
+                args: {
+                    displayName: 'Joe'
+                }
+            },
+            {
+                placeholder: 'joeEmail',
+                operation: 'createObject',
+                collection: 'email',
+                args: {
+                    address: 'joe@doe.com'
+                },
+                replace: [{
+                    path: 'user',
+                    placeholder: 'joe',
+                }]
+            },
+        ])
+
+        expect(info).toEqual({
+            jane: {
+                object: expect.objectContaining({
+                    id: expect.anything(),
+                    displayName: 'Jane',
+                })
+            },
+            joe: {
+                object: expect.objectContaining({
+                    id: expect.anything(),
+                    displayName: 'Joe',
+                })
+            },
+            joeEmail: {
+                object: expect.objectContaining({
+                    id: expect.anything(),
+                    user: expect.anything(),
+                    address: 'joe@doe.com'
+                })
+            }
+        })
+        expect(info['joeEmail']['object']['user']).toEqual(info['joe']['object']['id'])
+    })
+
+    it('should be able to do complex creates', async () => {
+        const { storageManager } = await setupChildOfTest()
+        const { object } = await storageManager.collection('user').createObject({
+            displayName: 'Jane',
+            emails: [{address: 'jane@doe.com'}]
+        })
+        expect(object).toEqual({
+            id: expect.anything(),
+            displayName: 'Jane',
+            emails: [{
+                id: expect.anything(),
+                address: 'jane@doe.com',
+            }]
+        })
+        expect(await storageManager.collection('user').findOneObject({id: object.id})).toEqual({
+            id: object.id,
+            displayName: 'Jane'
+        })
+        expect(await storageManager.collection('email').findOneObject({id: object.emails[0].id})).toEqual({
+            id: object.emails[0].id,
+            user: object.id,
+            address: 'jane@doe.com'
+        })
+    })
+
+    it('should be able to delete single objects by pk', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
+        const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
+        await storageManager.collection('object').deleteOneObject(object1)
+        expect(await storageManager.collection('object').findObjects({})).toEqual([
+            expect.objectContaining({id: object2.id})
+        ])
+    })
+
+    it('should be able to delete multiple objects by pk', async () => {
+        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+        const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
+        const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
+        const { object: object3 } = await storageManager.collection('object').createObject({field: 3})
+        await storageManager.collection('object').deleteObjects({id: {$in: [object1.id, object2.id]}})
+        const results = await storageManager.collection('object').findObjects({})
+        expect(await storageManager.collection('object').findObjects({})).toEqual([
+            expect.objectContaining({id: object3.id})
         ])
     })
 }
