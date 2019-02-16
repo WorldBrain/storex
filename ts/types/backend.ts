@@ -5,7 +5,7 @@ import { isRelationshipReference } from "./relationships";
 export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
 export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions & {fields?: string[]}
-export type FindManyOptions = FindSingleOptions & PaginationOptions
+export type FindManyOptions = FindSingleOptions & PaginationOptions & SortingOptions
 export type CountOptions = DBNameOptions & IgnoreCaseOptions
 export type UpdateManyOptions = DBNameOptions
 export type UpdateManyResult = any
@@ -20,6 +20,7 @@ export type IgnoreCaseOptions = {ignoreCase? : string[]}
 export type ReverseOptions = {reverse? : boolean}
 export type DBNameOptions = {database? : string}
 export type PaginationOptions = {limit? : number, skip? : number}
+export type SortingOptions = {order? : Array<[string, 'asc' | 'desc']>}
 
 export const COLLECTION_OPERATIONS = new Set([
     'createObject',
