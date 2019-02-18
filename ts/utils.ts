@@ -10,9 +10,12 @@ export function pluralize(singular: string) {
 
 export type CreateObjectDissection = {objects: any[]}
 
-export function dissectCreateObjectOperation(operationDefinition, registry : StorageRegistry) : CreateObjectDissection {
+export function dissectCreateObjectOperation(operationDefinition, registry : StorageRegistry, options : {generatePlaceholder? : () => string | number} = {}) : CreateObjectDissection {
     const objectsByPlaceholder = {}
-    let placeholdersCreated = 0
+    options.generatePlaceholder = options.generatePlaceholder || (() => {
+        let placeholdersCreated = 0
+        return () => ++placeholdersCreated
+    })()
 
     const dissect = (collection : string, object, relations = {}, path = []) => {
         const collectionDefinition = registry.collections[collection]
@@ -24,7 +27,7 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
             return !collectionDefinition.reverseRelationshipsByAlias[key]
         }, object)
 
-        const placeholder = ++placeholdersCreated
+        const placeholder = options.generatePlaceholder()
         objectsByPlaceholder[placeholder] = lonelyObject
         const dissection = [
             {

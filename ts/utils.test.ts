@@ -101,6 +101,52 @@ describe('Create object operation dissecting', () => {
             ]
         })
     })
+
+    it('should correctly dissect a createObject operation childOf and singleChildOf relationships with custom placeholder generation', async () => {
+        const storageManager = await createTestStorageManager({
+            configure: () => null
+        } as any)
+
+        const testObject = generateTestObject({email: 'foo@test.com', passwordHash: 'notahash', expires: 10})
+        expect(dissectCreateObjectOperation({
+            operation: 'createObject',
+            collection: 'user',
+            args: testObject
+        }, storageManager.registry, {
+            generatePlaceholder: (() => {
+                let placeholdersGenerated = 0
+                return () => `custom-${++placeholdersGenerated}`
+            })(),
+        })).toEqual({
+            objects: [
+                {
+                    placeholder: 'custom-1',
+                    collection: 'user',
+                    path: [],
+                    object: omit(testObject, 'emails'),
+                    relations: {},
+                },
+                {
+                    placeholder: 'custom-2',
+                    collection: 'userEmail',
+                    path: ['emails', 0],
+                    object: omit(testObject.emails[0], 'verificationCode'),
+                    relations: {
+                        user: 'custom-1'
+                    },
+                },
+                {
+                    placeholder: 'custom-3',
+                    collection: 'userEmailVerificationCode',
+                    path: ['emails', 0, 'verificationCode'],
+                    object: omit(testObject.emails[0].verificationCode),
+                    relations: {
+                        userEmail: 'custom-2'
+                    },
+                },
+            ]
+        })
+    })
 })
 
 describe('Converting dissected create operation to batch', () => {
