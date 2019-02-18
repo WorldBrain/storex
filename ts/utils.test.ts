@@ -191,6 +191,51 @@ describe('Converting dissected create operation to batch', () => {
             },
         ])
     })
+
+    it('should work keep placeholders', async () => {
+        const storageManager = await createTestStorageManager({
+            configure: () => null
+        } as any)
+
+        const testObject = generateTestObject({email: 'foo@test.com', passwordHash: 'notahash', expires: 10})
+        const dissection = dissectCreateObjectOperation({
+            operation: 'createObject',
+            collection: 'user',
+            args: testObject
+        }, storageManager.registry, {generatePlaceholder: (() => {
+            let placeholdersGenerated = 0
+            return () => `custom-${++placeholdersGenerated}`
+        })()})
+        expect(convertCreateObjectDissectionToBatch(dissection)).toEqual([
+            {
+                placeholder: 'custom-1',
+                operation: 'createObject',
+                collection: 'user',
+                args: omit(testObject, 'emails'),
+                replace: [],
+            },
+            {
+                placeholder: 'custom-2',
+                operation: 'createObject',
+                collection: 'userEmail',
+                args: omit(testObject.emails[0], 'verificationCode'),
+                replace: [{
+                    path: 'user',
+                    placeholder: 'custom-1',
+                }]
+            },
+            {
+                placeholder: 'custom-3',
+                operation: 'createObject',
+                collection: 'userEmailVerificationCode',
+                args: testObject.emails[0].verificationCode,
+                replace: [{
+                    path: 'userEmail',
+                    placeholder: 'custom-2',
+                }]
+            },
+        ])
+    })
 })
 
 describe('setIn()', () => {

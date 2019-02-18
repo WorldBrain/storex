@@ -82,13 +82,12 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
 }
 
 export function convertCreateObjectDissectionToBatch(dissection : CreateObjectDissection) {
-    let placeholder = 0
     const converted = []
     for (const step of dissection.objects) {
         converted.push({
             operation: 'createObject',
             collection: step.collection,
-            placeholder: (++placeholder).toString(),
+            placeholder: step.placeholder.toString(),
             args: step.object,
             replace: Object.entries(step.relations).map(([key, value]) => ({
                 path: key,
