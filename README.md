@@ -17,6 +17,8 @@ $ npm install @worldbrain/storex-backend-dexie --save # IndexedDB through Dexie 
 $ # For a server-side SQL DB
 $ npm install @worldbrain/storex-backend-sequelize --save # MySQL, PostgreSQL, SQLite, MSSQL through Sequelize
 
+$ # For a Firestore mBaaS DB
+$ npm install @worldbrain/storex-backend-firestore --save
 ```
 
 Basic usage
@@ -95,12 +97,17 @@ The power of Storex comes from having modular packages that can be recombined in
 * [Schema migrations](https://github.com/WorldBrain/storex-schema-migrations): The functionality you need, provided in a modular and adaptable way, to handle schema and data migration as your application evolved. Written with a diverse context in mind, like generating SQL scripts for DBAs, running migration in Serverless environments, converting exported data on import, etc.
 * [Schema visualization using Graphviz](https://github.com/WorldBrain/storex-visualize-graphviz): Still in its infancy, this creates a GraphViz DOT files showing you the relationships between your collections.
 
+Also, current officially supported back-ends are:
+* [Dexie](https://github.com/WorldBrain/storex-backend-dexie): Manages interaction with IndexedDB for you, so your application can run fully client-side. Use for your daily development workflow, for fully client-side applications, or offline-first applications.
+* [Sequelize](https://github.com/WorldBrain/storex-backend-sequelize): Interact with any SQL database supported by Sequelize, such as MySQL or PostgreSQL. Meant to be used server-side.
+* [Firestore](https://github.com/WorldBrain/storex-backend-firestore): Store your data in Firestore, so you don't have to build a whole back-end yourself. Can be used directly from the client-side, or inside Cloud Functions. Automatic Security Rule generation is on the way.
+
 Status and future development
 =============================
 
 At present, these features are implemented and tested:
 
-- **One DB abstraction layer for client- and server-side applications:** Using Dexie for IndexedDB, or Sequelize for SQL databases. This allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire.
+- **One DB abstraction layer for client-side, server-side and mBaaS code:** Use the Dexie backend for IndexedDB client-side applications, the Sequelize backend for server-side SQL-based databases, or the Firestore backend for mBaaS-based applications. This allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire, so you can flexible adjust your architecture as your application evolves.
 - **Defining data in a DB-agnostic way as a graph of collections**: By registering your data collections with the StorageManager, you can have an easily introspectable representation of your data model
 - **Automatic creation of relationships in DB-agnostic way**: One-to-one, one-to-many and many-to-many relationships declared in DB-agnostic ways are automatically being taken care of by the underlying StorageBackend on creation.
 - **MongoDB-style querying:** The .findObjects() and .findOneObject() methods of a collection take MongoDB-style queries, which will then be translated by the underlying StorageBackend.
