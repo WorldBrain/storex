@@ -15,6 +15,12 @@ export type DeleteSingleOptions = DBNameOptions
 export type DeleteSingleResult = any
 export type DeleteManyOptions = DBNameOptions & {limit? : number}
 export type DeleteManyResult = any
+export type OperationBatch = Array<CreateObjectBatchOperation | UpdateObjectsBatchOperation | DeleteObjectsBatchOperation>
+export type BatchOperationBase = {operation : string, placeholder? : string, replace? : {path : string, placeholder : string}[]}
+export type CollectionBatchOperation = BatchOperationBase & {collection : string}
+export type CreateObjectBatchOperation = CollectionBatchOperation & {operation : 'createObject', args : any}
+export type UpdateObjectsBatchOperation = CollectionBatchOperation & {operation : 'updateObjects', where : any, updates : any}
+export type DeleteObjectsBatchOperation = CollectionBatchOperation & {operation : 'deleteObjects', where : any, updates : any}
 
 export type IgnoreCaseOptions = {ignoreCase? : string[]}
 export type ReverseOptions = {reverse? : boolean}
@@ -122,6 +128,10 @@ export abstract class StorageBackend {
         } else {
             throw new Error('Updating single objects with compound pks is not supported yet')
         }
+    }
+
+    executeBatch(batch : OperationBatch) {
+        throw new Error('Not implemented')
     }
 
     supports(feature : string) {

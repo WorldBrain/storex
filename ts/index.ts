@@ -19,23 +19,21 @@ const COLLECTION_OPERATION_ALIASES = {
 export default class StorageManager implements StorageManagerInterface {
     public registry: StorageRegistry
     public backend: StorageBackend
-    private _middleware : StorageMiddleware[]
+    private _middleware : StorageMiddleware[] = []
 
-    constructor({ backend, middleware = [], fieldTypes }: { backend: StorageBackend, middleware? : StorageMiddleware[], fieldTypes?: FieldTypeRegistry }) {
+    constructor({ backend, fieldTypes }: { backend: StorageBackend, fieldTypes?: FieldTypeRegistry }) {
         this.registry = new StorageRegistry({ fieldTypes: fieldTypes || createDefaultFieldTypeRegistry() })
         this.backend = backend
         this.backend.configure({ registry: this.registry })
+    }
+
+    setMiddleware(middleware : StorageMiddleware[]) {
         this._middleware = middleware
         this._middleware.reverse()
     }
 
     async finishInitialization() {
         await this.registry.finishInitialization()
-        for (const middleware of this._middleware) {
-            if (middleware.setup) {
-                middleware.setup({storageManager: this})
-            }
-        }
     }
 
     collection(collectionName: string): StorageCollection {

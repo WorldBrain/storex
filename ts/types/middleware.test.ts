@@ -19,7 +19,8 @@ describe('Middleware', () => {
         const storageManager = await createTestStorageManager({
             configure: () => null,
             operation: async (...args) => ({args})
-        } as any, {middleware})
+        } as any)
+        storageManager.setMiddleware(middleware)
 
         expect(await storageManager.collection('user').createObject({foo: 'test'})).toEqual({
             args: ['createObject', 'user', {foo: 'test'}],
