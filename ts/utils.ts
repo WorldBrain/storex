@@ -98,6 +98,17 @@ export function convertCreateObjectDissectionToBatch(dissection : CreateObjectDi
     return converted
 }
 
+export function reconstructCreatedObjectFromBatchResult(args : {
+    object, collection : string, storageRegistry : StorageRegistry,
+    operationDissection : CreateObjectDissection, batchResultInfo
+}) {
+    for (const step of args.operationDissection.objects) {
+        const collectionDefiniton = args.storageRegistry.collections[args.collection]
+        const pkIndex = collectionDefiniton.pkIndex
+        setIn(args.object, [...step.path, pkIndex], args.batchResultInfo[step.placeholder].object[pkIndex as string])
+    }
+}
+
 export function setIn(obj, path : Array<string | number>, value) {
     for (const part of path.slice(0, -1)) {
         obj = obj[part]
