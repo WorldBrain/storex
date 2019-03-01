@@ -7,10 +7,8 @@
   "scripts": {
     "prepare": "tsc",
     "prepare:watch": "npm run prepare -- -w",
-    "test:jest": "jest --verbose --config=.jest-config.json",
-    "test:jest:watch": "jest --verbose --watch --config=.jest-config.json",
-    "test:mocha": "mocha --require ts-node/register 'ts/**/*.test.ts'",
-    "test:mocha:watch": "mocha -r source-map-support/register -r ts-node/register 'ts/**/*.test.ts' --watch --watch-extensions ts"
+    "test": "mocha --require ts-node/register 'ts/**/*.test.ts'",
+    "test:watch": "mocha -r source-map-support/register -r ts-node/register 'ts/**/*.test.ts' --watch --watch-extensions ts"
   },
   "keywords": [
     "storage",
