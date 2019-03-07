@@ -7,8 +7,8 @@
   "scripts": {
     "prepare": "tsc",
     "prepare:watch": "npm run prepare -- -w",
-    "test": "mocha --require ts-node/register 'ts/**/*.test.ts'",
-    "test:watch": "mocha -r source-map-support/register -r ts-node/register 'ts/**/*.test.ts' --watch --watch-extensions ts"
+    "test": "mocha --require ts-node/register \"ts/**/*.test.ts\"",
+    "test:watch": "mocha -r source-map-support/register -r ts-node/register \"ts/**/*.test.ts\" --watch --watch-extensions ts"
   },
   "keywords": [
     "storage",
