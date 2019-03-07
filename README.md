@@ -151,7 +151,7 @@ Storex is written in [Typescript](https://www.typescriptlang.org/). As such, the
 3) Inside the checked out repo, run `npm link`.
 4) In another directory, check a out back-end you'd like to work on: `git clone git@github.com:WorldBrain/storex-backend-dexie.git`
 5) Run `yarn` again inside the checked out repo.
-6) Run `yarn test:mocha:watch` to start hacking!
+6) Run `yarn test:watch` to start hacking!
 
 Getting in touch
 ================
