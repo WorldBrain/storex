@@ -33,10 +33,10 @@ export default class StorageRegistry extends EventEmitter {
     public _collectionVersionMap: { [name: string]: RegistryCollections } = {}
     public fieldTypes: FieldTypeRegistry
 
-    constructor({ fieldTypes }: { fieldTypes: FieldTypeRegistry }) {
+    constructor({ fieldTypes }: { fieldTypes?: FieldTypeRegistry } = {}) {
         super()
 
-        this.fieldTypes = fieldTypes
+        this.fieldTypes = fieldTypes || new FieldTypeRegistry()
     }
 
     registerCollection(name: string, defs: CollectionDefinitions) {
