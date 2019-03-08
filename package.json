@@ -1,6 +1,7 @@
 {
   "name": "@worldbrain/storex",
   "version": "0.3.0",
+  "license": "MIT",
   "description": "Storex core module - a storage layer without assumptions",
   "main": "lib/index.js",
   "typings": "lib/index",
