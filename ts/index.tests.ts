@@ -1,7 +1,6 @@
 import * as expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend } from './types'
-import { StorageMiddleware } from './types/middleware';
 
 export async function createTestStorageManager(backend: StorageBackend) {
     const storageManager = new StorageManager({ backend })
@@ -219,12 +218,14 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
     async function setupUserAdminTest() {
         const backend = await backendCreator()
         const storageManager = await createTestStorageManager(backend)
+        await storageManager.backend.migrate()
         return { backend, storageManager }
     }
 
     async function setupChildOfTest({userFields = null} = {}) {
         const backend = await backendCreator()
         const storageManager = new StorageManager({backend})
+        await storageManager.backend.migrate()
         storageManager.registry.registerCollections({
             user: {
                 version: new Date(2019, 1, 1),
@@ -249,6 +250,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
     async function setupOperatorTest({fieldType}) {
         const backend = await backendCreator()
         const storageManager = new StorageManager({backend})
+        await storageManager.backend.migrate()
         storageManager.registry.registerCollections({
             object: {
                 version: new Date(2019, 1, 1),
