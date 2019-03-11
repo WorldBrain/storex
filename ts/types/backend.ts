@@ -130,7 +130,7 @@ export abstract class StorageBackend {
         }
     }
 
-    executeBatch(batch : OperationBatch) {
+    async executeBatch(batch : OperationBatch) {
         throw new Error('Not implemented')
     }
 

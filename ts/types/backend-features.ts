@@ -9,4 +9,8 @@ export interface StorageBackendFeatureSupport {
   crossRelationshipQueries? : boolean
   executeBatch? : boolean
   batchCreates? : boolean
+  resultLimiting? : boolean
+  singleFieldSorting? : boolean
+  multiFieldSorting? : boolean
+  sortWithIndependentRangeFilter? : boolean
 }

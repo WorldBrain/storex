@@ -87,6 +87,17 @@ export function generateTestObject(
     }
 }
 
+async function skipIfNotSupported(options : {
+    backend : StorageBackend, testContext? : Mocha.ITestCallbackContext, shouldSupport? : string[],
+    [junk : string] : any
+}) {
+    for (const feature of options.shouldSupport || []) {
+        if (!options.backend.supports(feature)) {
+            options.testContext.skip()
+        }
+    }
+}
+
 export function testStorageBackend(backendCreator: () => Promise<StorageBackend>, {fullTextSearch} : {fullTextSearch? : boolean} = {}) {
     describe('Individual operations', () => {
         testStorageBackendOperations(backendCreator)
@@ -111,7 +122,7 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
         return { storageManager }
     }
 
-    it('should do basic CRUD ops', async () => {
+    it('should do basic CRUD ops', async function() {
         const { storageManager } = await setupTest()
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
         const { object: user } = await storageManager.collection('user').createObject(generateTestObject({ email, passwordHash, expires }))
@@ -138,7 +149,7 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
         expect(await storageManager.collection('user').findOneObject({id: user.id})).toBe(null)
     })
 
-    it('should handle connects relationships correctly', async () => {
+    it('should handle connects relationships correctly', async function() {
         const { storageManager } = await setupTest()
         const email = 'something@foo.com', passwordHash = 'notahash'
         const createdUser = (await storageManager.collection('user').createObject({
@@ -168,16 +179,15 @@ export function testStorageBackendWithAuthExample(backendCreator: () => Promise<
 export function testStorageBackendFullTextSearch(backendCreator: () => Promise<StorageBackend>) {
     let backend: StorageBackend
 
-    beforeEach(async () => {
+    beforeEach(async function() {
         backend = await backendCreator()
-        await backend.migrate()
     })
 
-    afterEach(async () => {
+    afterEach(async function() {
         await backend.cleanup()
     })
 
-    const createTestStorageManager = () => {
+    const createTestStorageManager = async function() {
         const storageManager = new StorageManager({ backend })
         storageManager.registry.registerCollections({
             pages: {
@@ -189,7 +199,8 @@ export function testStorageBackendFullTextSearch(backendCreator: () => Promise<S
                 indices: [{field: 'text'}]
             }
         })
-        storageManager.finishInitialization()
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
         return storageManager
     }
 
@@ -198,7 +209,7 @@ export function testStorageBackendFullTextSearch(backendCreator: () => Promise<S
             this.skip()
         }
 
-        const storageManager = createTestStorageManager()
+        const storageManager = await createTestStorageManager()
         await storageManager.collection('pages').createObject({
             url: 'https://www.test.com/',
             text: 'testing this stuff is not always easy'
@@ -222,14 +233,15 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         return { backend, storageManager }
     }
 
-    async function setupChildOfTest({userFields = null} = {}) {
+    async function setupChildOfTest(options : {userFields?, shouldSupport? : string[], testContext? : Mocha.ITestCallbackContext} = {}) {
         const backend = await backendCreator()
+        await skipIfNotSupported({backend, ...options})
+
         const storageManager = new StorageManager({backend})
-        await storageManager.backend.migrate()
         storageManager.registry.registerCollections({
             user: {
                 version: new Date(2019, 1, 1),
-                fields: userFields || {
+                fields: options.userFields || {
                     displayName: {type: 'string'}
                 }
             },
@@ -244,26 +256,28 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
             }
         })
         await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
         return { storageManager }
     }
 
-    async function setupOperatorTest({fieldType}) {
+    async function setupOperatorTest(options : {fieldType, shouldSupport? : string[], testContext? : Mocha.ITestCallbackContext}) {
         const backend = await backendCreator()
+        await skipIfNotSupported({backend, ...options})
         const storageManager = new StorageManager({backend})
-        await storageManager.backend.migrate()
         storageManager.registry.registerCollections({
             object: {
                 version: new Date(2019, 1, 1),
                 fields: {
-                    field: {type: fieldType}
+                    field: {type: options.fieldType}
                 }
             },
         })
         await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
         return { storageManager }
     }
 
-    it('should be able to create simple objects and find them again by string pk', async () => {
+    it('should be able to create simple objects and find them again by string pk', async function() {
         const { storageManager } = await setupUserAdminTest()
         const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
         expect(object.id).not.toBe(undefined)
@@ -274,7 +288,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should be able to create simple objects and find them again by string field', async () => {
+    it('should be able to create simple objects and find them again by string field', async function() {
         const { storageManager } = await setupUserAdminTest()
         const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
         expect(object.id).not.toBe(undefined)
@@ -285,7 +299,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should be able to create simple objects and find them again by boolean field', async () => {
+    it('should be able to create simple objects and find them again by boolean field', async function() {
         const { storageManager } = await setupUserAdminTest()
         const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: true})
         expect(object.id).not.toBe(undefined)
@@ -296,8 +310,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should be able to find by $lt operator', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to find by $lt operator', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 3})
@@ -306,8 +320,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         expect(results).toContainEqual(expect.objectContaining({field: 2}))
     })
 
-    it('should be able to find by $lte operator', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to find by $lte operator', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 3})
@@ -316,8 +330,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         expect(results).toContainEqual(expect.objectContaining({field: 2}))
     })
 
-    it('should be able to find by $gt operator', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to find by $gt operator', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 3})
@@ -326,8 +340,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         expect(results).toContainEqual(expect.objectContaining({field: 3}))
     })
 
-    it('should be able to find by $gte operator', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to find by $gte operator', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 3})
@@ -336,8 +350,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         expect(results).toContainEqual(expect.objectContaining({field: 3}))
     })
 
-    it('should be able to order results in ascending order', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to order results in ascending order', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int', shouldSupport: ['singleFieldSorting'], testContext: this})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 3})
@@ -348,8 +362,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         ])
     })
 
-    it('should be able to order results in descending order', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to order results in descending order', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int', shouldSupport: ['singleFieldSorting'], testContext: this})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 3})
@@ -360,8 +374,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         ])
     })
 
-    it('should be able to limit ascending results', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to limit ascending results', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int', shouldSupport: ['singleFieldSorting', 'resultLimiting'], testContext: this})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 3})
@@ -371,8 +385,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         ])
     })
 
-    it('should be able to limit descending results', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to limit descending results', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int', shouldSupport: ['singleFieldSorting', 'resultLimiting'], testContext: this})
         await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').createObject({field: 1})
         await storageManager.collection('object').createObject({field: 3})
@@ -382,7 +396,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         ])
     })
 
-    it('should be able to update objects by string pk', async () => {
+    it('should be able to update objects by string pk', async function() {
         const { storageManager } = await setupUserAdminTest()
         const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: false})
         expect(object.id).not.toBe(undefined)
@@ -394,7 +408,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should be able to update objects by string field', async () => {
+    it('should be able to update objects by string field', async function() {
         const { storageManager } = await setupUserAdminTest()
         const { object } = await storageManager.collection('user').createObject({identifier: 'email:joe@doe.com', isActive: false})
         expect(object.id).not.toBe(undefined)
@@ -406,8 +420,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should correctly do batch operations containing only creates', async () => {
-        const { storageManager } = await setupChildOfTest()
+    it('should correctly do batch operations containing only creates', async function() {
+        const { storageManager } = await setupChildOfTest({shouldSupport: ['executeBatch'], testContext: this})
         const { info } = await storageManager.operation('executeBatch', [
             {
                 placeholder: 'jane',
@@ -463,8 +477,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         expect(info['joeEmail']['object']['user']).toEqual(info['joe']['object']['id'])
     })
 
-    it('should support batch operations with complex createObject operations', async () => {
-        const { storageManager } = await setupChildOfTest()
+    it('should support batch operations with complex createObject operations', async function()  {
+        const { storageManager } = await setupChildOfTest({shouldSupport: ['executeBatch'], testContext: this})
         const { info } = await storageManager.operation('executeBatch', [
             {
                 placeholder: 'jane',
@@ -508,7 +522,7 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
 
     it('should support batch operations with compound primary keys')
 
-    it('should be able to do complex creates', async () => {
+    it('should be able to do complex creates', async function() {
         const { storageManager } = await setupChildOfTest()
         const { object } = await storageManager.collection('user').createObject({
             displayName: 'Jane',
@@ -533,8 +547,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
-    it('should be able to delete single objects by pk', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to delete single objects by pk', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
         const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
         await storageManager.collection('object').deleteOneObject(object1)
@@ -543,8 +557,8 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         ])
     })
 
-    it('should be able to delete multiple objects by pk', async () => {
-        const { storageManager } = await setupOperatorTest({fieldType: 'number'})
+    it('should be able to delete multiple objects by pk', async function() {
+        const { storageManager } = await setupOperatorTest({fieldType: 'int'})
         const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
         const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
         const { object: object3 } = await storageManager.collection('object').createObject({field: 3})
