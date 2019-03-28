@@ -1,6 +1,6 @@
 const pickBy = require('lodash/fp/pickBy')
 import StorageRegistry from "./registry";
-import { isChildOfRelationship, isConnectsRelationship } from "./types";
+import { isChildOfRelationship, isConnectsRelationship, isRelationshipReference } from "./types";
 
 const internalPluralize = require('pluralize')
 
@@ -114,4 +114,73 @@ export function setIn(obj, path : Array<string | number>, value) {
         obj = obj[part]
     }
     obj[path.slice(-1)[0]] = value
+}
+
+export function getObjectPk(object, collection : string, registry : StorageRegistry) {
+    const pkIndex = registry.collections[collection].pkIndex
+    if (typeof pkIndex === 'string') {
+        return object[pkIndex]
+    }
+    if (isRelationshipReference(pkIndex)) {
+        throw new Error(`Getting object PKs of objects with relationships as PKs is not supported yet`)
+    }
+
+    const pk = []
+    for (const indexField of pkIndex) {
+        if (typeof indexField === 'string') {
+            pk.push(object[indexField])
+        } else {
+            throw new Error(`getObject() called with relationship as pk, which is not supported yet.`)
+        }
+    }
+    return pk
+}
+
+export function getObjectWithoutPk(object, collection : string, registry : StorageRegistry) {
+    object = { ...object }
+
+    const pkIndex = registry.collections[collection].pkIndex
+    if (typeof pkIndex === 'string') {
+        delete object[pkIndex]
+        return object
+    }
+    if (isRelationshipReference(pkIndex)) {
+        throw new Error(`Getting objects without PKs of objects with relationships as PKs is not supported yet`)
+    }
+
+    for (const indexField of pkIndex) {
+        if (typeof indexField === 'string') {
+            delete object[indexField]
+        } else {
+            throw new Error(`getObject() called with relationship as pk, which is not supported yet.`)
+        }
+    }
+    return object
+}
+
+export function setObjectPk(object, pk, collection : string, registry : StorageRegistry) {
+    const collectionDefinition = registry.collections[collection]
+    if (!collectionDefinition) {
+        throw new Error(`Could not find collection definition for '${collection}'`)
+    }
+
+    const pkIndex = collectionDefinition.pkIndex
+    if (typeof pkIndex === 'string') {
+        object[pkIndex] = pk
+        return object
+    }
+    if (isRelationshipReference(pkIndex)) {
+        throw new Error(`Setting object PKs of objects with relationships as PKs is not supported yet`)
+    }
+
+    let indexFieldIdx = 0
+    for (const indexField of pkIndex) {
+        if (typeof indexField === 'string') {
+            object[indexField] = pk[indexFieldIdx++]
+        } else {
+            throw new Error(`setObjectPk() called with relationship as pk, which is not supported yet.`)
+        }
+    }
+
+    return object
 }
