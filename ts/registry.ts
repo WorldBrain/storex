@@ -86,8 +86,19 @@ export default class StorageRegistry extends EventEmitter {
         return this._collectionVersionMap
     }
 
-    getCollectionsByVersion(version: Date): RegistryCollections {
-        return this._collectionVersionMap[version.getTime()]
+    getCollectionsByVersion(targetVersion: Date): RegistryCollections {
+        const collections = {}
+        for (const collectionDefinitions of Object.values(this.collectionVersionMap)) {
+            for (const [collectionName, collectionDefinition] of Object.entries(collectionDefinitions)) {
+                const savedCollectionDefinition = collections[collectionName]
+                if (!savedCollectionDefinition || (collectionDefinition.version.getTime() > savedCollectionDefinition.version.getTime())) {
+                    if (collectionDefinition.version.getTime() <= targetVersion.getTime()) {
+                        collections[collectionName] = collectionDefinition
+                    }
+                }
+            }
+        }
+        return collections
     }
 
     get collectionsByVersion() {

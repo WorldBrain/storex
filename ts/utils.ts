@@ -62,7 +62,7 @@ export function dissectCreateObjectOperation(operationDefinition, registry : Sto
                     dissection.push(...dissect(
                         reverseRelationship.sourceCollection,
                         objectToCreate,
-                        {[collection]: placeholder},
+                        {[reverseRelationship.alias]: placeholder},
                         [...path, ...childPath]
                     ))
                 }

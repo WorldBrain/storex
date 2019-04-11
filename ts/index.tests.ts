@@ -520,6 +520,11 @@ export function testStorageBackendOperations(backendCreator : () => Promise<Stor
         })
     })
 
+    it('should just ignore empty batch operations', async () => {
+        const { storageManager } = await setupChildOfTest({shouldSupport: ['executeBatch'], testContext: this})
+        await storageManager.operation('executeBatch', [])
+    })
+
     it('should support batch operations with compound primary keys')
 
     it('should be able to do complex creates', async function() {
