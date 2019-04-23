@@ -24,15 +24,18 @@ export interface CollectionField {
 export interface CollectionDefinition {
     version: Date
     fields: CollectionFields
+    relationships?: Relationships
     indices?: IndexDefinition[]
     uniqueTogether?: string[][]
+    groupBy? : { key : string, subcollectionName : string }[]
+    
+    // These are automatically deduced
     pkIndex?: IndexSourceFields
-    relationships?: Relationships
     relationshipsByAlias?: RelationshipsByAlias
     reverseRelationshipsByAlias?: RelationshipsByAlias
     fieldsWithCustomType?: string[]
     migrate?: MigrationRunner
     name?: string
-    watch?: boolean // should we include this in the 'changing' event? defaults to true
+    watch?: boolean // TODO: move this out of Storex
     backup?: boolean
 }
