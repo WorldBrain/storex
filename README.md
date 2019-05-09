@@ -94,43 +94,42 @@ Storex ecosystem
 
 The power of Storex comes from having modular packages that can be recombined in different contexts based on the core 'language' or patterns Storex provides to talk about data. Officially supported packages will be included in the `@worldbrain` npm namespace. This helps us to endorse patterns that emerge throughout the ecosystem in a controlled, collectively governed way. These are the currently supported packages:
 
-* [Schema migrations](https://github.com/WorldBrain/storex-schema-migrations): The functionality you need, provided in a modular and adaptable way, to handle schema and data migration as your application evolved. Written with a diverse context in mind, like generating SQL scripts for DBAs, running migration in Serverless environments, converting exported data on import, etc.
+* [Storage modules](https://github.com/WorldBrain/storex-pattern-modules): An pattern of organizing your storage logic modules so other parts of your application and tooling can have more meta-information about the application. This includes standard ways of defining your data structure and schema changes, describing how you access your data, describing higher-level methods, and describing access rules. This allows for really cool stuff like automatically detecting operations on fields that are not indexed, automatically generating client-server APIs for moving your data around, generating rules for other systems (like Firebase) to manage user rights, and a lot more.
+* [Schema migrations](https://github.com/WorldBrain/storex-schema-migrations): The functionality you need, provided in a modular and adaptable way, to describe and execute schema migration as your application evolves. Written with a diverse context in mind, like generating SQL scripts for DBAs, running migration in Serverless environments, converting exported data on import, etc.
+* [Client-server communication usign GraphQL](https://github.com/WorldBrain/storex-graphql-schema/): This allows you to move your storage layer, expressed in [storage modules](https://github.com/WorldBrain/storex-pattern-modules), server-side transparently by using GraphQL as the transport layer with your back-end. You consume this API with the [client](https://github.com/WorldBrain/storex-graphql-client) so the business logic consuming your storage logic can stay exactly the same, making GraphQL an implementation detail, not something running throughout your code.
+* [Data tools](https://github.com/WorldBrain/storex-data-tools): A collection of data tools allowing you to apply schema migration on live data (coming in through the network or read from files), generate large sets of fake, complex data for testing purposes, and tools for dumping and loading test fixtures.
 * [Schema visualization using Graphviz](https://github.com/WorldBrain/storex-visualize-graphviz): Still in its infancy, this creates a GraphViz DOT files showing you the relationships between your collections.
 
 Also, current officially supported back-ends are:
 * [Dexie](https://github.com/WorldBrain/storex-backend-dexie): Manages interaction with IndexedDB for you, so your application can run fully client-side. Use for your daily development workflow, for fully client-side applications, or offline-first applications.
 * [Sequelize](https://github.com/WorldBrain/storex-backend-sequelize): Interact with any SQL database supported by Sequelize, such as MySQL or PostgreSQL. Meant to be used server-side.
-* [Firestore](https://github.com/WorldBrain/storex-backend-firestore): Store your data in Firestore, so you don't have to build a whole back-end yourself. Can be used directly from the client-side, or inside Cloud Functions. Automatic Security Rule generation is on the way.
+* [Firestore](https://github.com/WorldBrain/storex-backend-firestore): Store your data in Firestore, so you don't have to build a whole back-end yourself. Can be used directly from the client-side, or inside Cloud Functions. Includes a Security Rule generator that removes a lot of the pain of writing secure and maintainable security rules.
 
 Status and future development
 =============================
 
-At present, these features are implemented and tested:
+In addtion to the functionality described above, these are some features to highlight that are implemented and used in production:
 
 - **One DB abstraction layer for client-side, server-side and mBaaS code:** Use the Dexie backend for IndexedDB client-side applications, the Sequelize backend for server-side SQL-based databases, or the Firestore backend for mBaaS-based applications. This allows you to write storage-related business logic portable between front- and back-end, while easily switching to non-SQL storage back-ends later if you so desire, so you can flexible adjust your architecture as your application evolves.
 - **Defining data in a DB-agnostic way as a graph of collections**: By registering your data collections with the StorageManager, you can have an easily introspectable representation of your data model
 - **Automatic creation of relationships in DB-agnostic way**: One-to-one, one-to-many and many-to-many relationships declared in DB-agnostic ways are automatically being taken care of by the underlying StorageBackend on creation.
-- **MongoDB-style querying:** The .findObjects() and .findOneObject() methods of a collection take MongoDB-style queries, which will then be translated by the underlying StorageBackend.
-- **Client-side full-text search using Dexie backend:** By passing a stemmer into the `DexieStorageBackend({stemmer: (text : string) => Promise<string[]>})` you can full-text search text fields using the fastest client-side full-text search engine yet!
+- **MongoDB-style querying:** Basic CRUD operations take MongoDB-style queries, which will then be translated by the underlying StorageBackend.
+- **Client-side full-text search using Dexie backend:** By passing a stemmer into the Dexie storage backend, you can full-text search text fields using the fastest client-side full-text search engine yet!
 - **Run automated storage-related tests in memory:** Using the Dexie back-end, you can pass in a fake IndexedDB implementation to run your storage in-memory for faster automated and manual testing.
 - **Version management of data models:** For each collection, you can pass in an array of different date-versioned collection versions, and you'll be able to iterate over your data model versions through time.
-- [DB-agnostic data migrations](https://github.com/WorldBrain/storex-schema-migrations): An easy and unified way of doing data-level migrations if your data model changes, like providing defaults for new non-optional fields, splitting and merging fields, splitting and joing collections, etc.
 
 The following items are on the roadmap in no particular order:
 
-- [Synching functionality for offline-first and p2p applications](https://github.com/WorldBrain/storex/issues/8)
-- [Unified access control definition](https://github.com/WorldBrain/storex/issues/6): Define the rules of who can read/write what data, which can be enforced by your API server or a Backend as a Service like Firebase.
+- [Synching functionality for offline-first and p2p applications](https://github.com/WorldBrain/storex/issues/8) (in development)
 - [Relationship fetching & filtering](https://github.com/WorldBrain/storex/issues/4): This would allow passing in an extra option to find(One)Object(s) signalling the back-end to also fetch relationship, which would translate to JOINs in SQL databases and use other configurable methods in other kinds of databases. Also, you could filter by relationships, like `collection('user').findObjects({'email.active': true})`.
-- [API server and consumer](https://github.com/WorldBrain/storex/issues/5): Allows you to start developing your application fully-client side for rapid iteration, and move the storage to the cloud when you're ready wit greatly reduced effort.
 - **Field types for handling user uploads:** Allowing you to reference user uploads in your data-model, while choosing your own back-end to host them.
 - **A caching layer:** Allows you to cache certain explicitly-configured queries in stores like Memcache and Redis
 - **Composite back-end writing to multiple back-ends at once:** When you're switching databases or cloud providers, there may be period where your application needs to the exact same data to multiple database systems at once.
 - **Assisting migrations from one database to another:** Creating standard procedures allowing copying data from one database to another with any paradigm translations that might be needed.
 - **Server-side full-text search server integration":** Allow for example to store your data in MondoDB, but your full-text index in ElasticSearch.
-- **Pre-compiled queries:** Let the backend know which kind of queries you're going to do, so the backend can optimize compilation, and you get a unified overview of how your applcation queries and manipulates data.
 - **Query analytics:** Report query performance and production usage patterns to your anaylics backend to give you insight into possible optimization opportunities (such as what kind of indices to create.)
 
-Also, Storex was built with decentralization in mind. The first available backends are Dexie and Sequelize, which allow you to user data on the client side. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
+Also, Storex was built with decentralization in mind. The first available backends are Dexie allowing you to user data client side, Sequelize for storing data server-side in relational databases (MySQL, PostgreSQL, AWS Aurora), and Firestore for quickly buiding cloud-based MVPs that can be relatively easily be migrated to other solutions. In the future, we see it possible to create backends for decentralized systems like [DAT](https://datproject.org/) to ease the transition and integration between centralized and decentralized back-ends as easy as possible.
 
 Contributing
 ============
@@ -146,12 +145,13 @@ There are different ways you can contribute:
 
 Storex is written in [Typescript](https://www.typescriptlang.org/). As such, there's a lot of type information serving as documentation for the reader of the code. To start writing code, do the following:
 
-1) Check out the Storex repo: `git clone git@github.com:WorldBrain/storex.git`. Skip steps 3, 4 and 5 if you're going to work on the Storex core package.
-2) Run `yarn` inside the checked out repo.
-3) Inside the checked out repo, run `npm link`.
-4) In another directory, check a out back-end you'd like to work on: `git clone git@github.com:WorldBrain/storex-backend-dexie.git`
-5) Run `yarn` again inside the checked out repo.
-6) Run `yarn test:watch` to start hacking!
+1) Check out the Storex workspace repo: `git clone --recursive git@github.com:WorldBrain/storex-workspace.git`.
+2) Run `yarn bootstrap` inside the checked out repo.
+3) cd to any package you'd like to work on, like `cd packages/@worldbrain/storex-backend-dexie`
+4) Create your own feature branch if necessay: `git checkout -b feature/my-awesome-feature`
+5) Run `yarn test:watch`
+
+More info on https://github.com/WorldBrain/storex-workspace
 
 Getting in touch
 ================

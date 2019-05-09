@@ -14,7 +14,7 @@ These are some of the principles behind Storex:
 From this flows:
 
 * Storex is not a framework
-* Storex is not an ORM (although you could build one on top, even though I believe ORMs are anti-patterns)
+* Storex is not an ActiveRecord implementation (although you could build one on top, even though I believe they're are anti-patterns encoraging the mixing of business- with storage logic)
 
 How it works
 ============
@@ -43,9 +43,9 @@ await storageManager.finishInitialization()
 # You can access meta-data about your collections and relationships between them here
 storageManager.registry.collections.user.relationships
 
-# You can access your data here
-storageManager.collection('user').createObject({ ... })
-
+# You can manipulate and access your data here
+await storageManager.collection('user').createObject({ ... })
+await storageManager.collection('user').findObjects({ ... })
 ```
 
 In-depth documentation
