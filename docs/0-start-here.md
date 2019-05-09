@@ -44,9 +44,28 @@ await storageManager.finishInitialization()
 storageManager.registry.collections.user.relationships
 
 # You can manipulate and access your data here
-await storageManager.collection('user').createObject({ ... })
-await storageManager.collection('user').findObjects({ ... })
+const { object } = await storageManager.collection('user').createObject({ name: 'Fred', age: 36 })
+const users = await storageManager.collection('user').findObjects({ name: 'Bob', age: { $gt: 30 }, ... })
 ```
+
+Under the hood, the collection methods are convenience methods that call the central `storageManager.operation(...)` method:
+```
+await storageManager.operation('createObject', 'user', { name: 'bla' })
+await storageManager.operation('executeBatch', [
+    { operation: 'createObject', collection: 'user', args: { name: 'Diane' } },
+    { operation: 'createObject', collection: 'user', args: { name: 'Jack' } },
+])
+```
+
+All of the operations then are sent through the configured [middleware](./middleware.md), similar to Express middlewares, allowing for things like logging, normalization, etc. before actually actually executing `storageBackend.operation(...)`. The base class of the storage back-end then checks whether the operation you're trying to do is supported, after which it executes the operation.
+
+Next steps
+==========
+
+To harness the full power of Storex, you'll probably want to:
+* Organize your storage logic into [storage modules](https://github.com/WorldBrain/storex-pattern-modules)
+* Understand [schema migrations](https://github.com/WorldBrain/storex-schema-migrations)
+* Take a look at the [front-end boilerplate](https://github.com/WorldBrain/storex-frontend-boilerplate) to understand how you can set up an application that you can flexibly deploy in multiple configurations including in-memory, with GraphQL and an RDBMS, or Firestore.
 
 In-depth documentation
 ======================
@@ -54,6 +73,7 @@ In-depth documentation
 * [Defining collections](./collections.md): This is about the steps above where you interact with storageManager.registry, describing the various options for your collections, fields and relationships.
 * [Interacting with data](./operations): How to query and manipulate your data.
 * [Introspecting collections](./registry.md): How you can use the available meta-data about your data in your applications and when writing a back-end.
-* [Using and writing plugins](./plugins.md): Backend-specific operations are implemented using plugins. Read how to use and write them here.
+* [Using and writing middleware](./middleware.md): You can transform operations that your application does before they arrived at the `StorageBackend`.
+* [Using and writing backend plugins](./plugins.md): Backend-specific operations are implemented using plugins. Read how to use and write them here.
 * [Performing schema migrations](https://github.com/WorldBrain/storex-schema-migrations): Safely and DB-agnosticly migrate your data as your schema changes
 * [Visualizing your data schema](https://github.com/WorldBrain/storex-visualize-graphviz): Still very primitive, but this generates a DOT file you can render with GraphViz of your data schema
