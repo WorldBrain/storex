@@ -1,3 +1,7 @@
 export interface StorageMiddleware {
-    process({next, operation} : {next : {process: ({operation}) => any}, operation : any[]})
+    process(context : StorageMiddlewareContext)
+}
+export interface StorageMiddlewareContext {
+    operation : any[]
+    next : { process: (context : { operation : any[] }) => any }
 }

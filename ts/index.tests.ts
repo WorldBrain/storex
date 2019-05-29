@@ -1,6 +1,7 @@
 import * as expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend, FieldType } from './types'
+import { StorageBackendFeatureSupport } from './types/backend-features';
 
 export type StorexBackendTestBackendCreator = (context : StorexBackendTestContext) => Promise<StorageBackend>
 export interface StorexBackendTestContext {
@@ -9,11 +10,8 @@ export interface StorexBackendTestContext {
 
 type TestContext = { backend : StorageBackend }
 function makeTestFactory(backendCreator : StorexBackendTestBackendCreator) {
-    type FactoryOptions = { shouldSupport? : string[] }
+    type FactoryOptions = { shouldSupport? : Array<keyof StorageBackendFeatureSupport> }
     type TestFunction = (context : TestContext) => Promise<void>
-    type Factory =
-        ((description : string, test? : TestFunction) => void) |
-        ((description : string, options? : FactoryOptions, test?: TestFunction) => void)
 
     function factory(description : string, test? : TestFunction) : void
     function factory(description : string, options : FactoryOptions, maybeTest? : TestFunction) : void
@@ -71,7 +69,7 @@ export async function createTestStorageManager(backend: StorageBackend) {
         userEmailVerificationCode: {
             version: new Date(2018, 7, 31),
             fields: {
-                code: { type: 'random-key' },
+                code: { type: 'string' },
                 expiry: { type: 'datetime', optional: true }
             },
             relationships: [
@@ -118,6 +116,7 @@ export function generateTestObject(
                 isVerified: false,
                 isPrimary: true,
                 verificationCode: {
+                    code: 'bla',
                     expires
                 }
             }
@@ -160,7 +159,7 @@ export function testStorageBackendWithAuthExample(backendCreator: StorexBackendT
         return { storageManager }
     }
 
-    it('should do basic CRUD ops' , { shouldSupport: ['createWithRelationships'] }, async function(context : TestContext) {
+    it('should do basic CRUD ops with relationships' , { shouldSupport: ['createWithRelationships'] }, async function(context : TestContext) {
         const { storageManager } = await setupTest({ context })
         const email = 'blub@bla.com', passwordHash = 'hashed!', expires = Date.now() + 1000 * 60 * 60 * 24
         const { object: user } = await storageManager.collection('user').createObject(generateTestObject({ email, passwordHash, expires }))
@@ -172,7 +171,7 @@ export function testStorageBackendWithAuthExample(backendCreator: StorexBackendT
                 email: 'blub@bla.com',
                 isVerified: false,
                 isPrimary: true,
-                verificationCode: expect['objectContaining']({})
+                verificationCode: expect['objectContaining']({ code: 'bla' })
             }]
         })
 
@@ -565,7 +564,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(info['joeEmail']['object']['user']).toEqual(info['joe']['object']['id'])
         })
 
-        it('should support batch operations with complex createObject operations', { shouldSupport: ['executeBatch'] }, async function(context : TestContext)  {
+        it('should support batch operations with complex createObject operations', { shouldSupport: ['executeBatch', 'createWithRelationships'] }, async function(context : TestContext)  {
             const { storageManager } = await setupChildOfTest({ backend: context.backend })
             const { info } = await storageManager.operation('executeBatch', [
                 {
@@ -670,6 +669,38 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(await storageManager.collection('object').findObjects({})).toEqual([
                 expect.objectContaining({id: object3.id})
             ])
+        })
+    })
+
+    describe('counting', () => {
+        it('should be able to count all objects', { shouldSupport: ['count'] }, async function(context : TestContext)  {
+            const { storageManager } = await setupOperatorTest({
+                context,
+                fieldType: 'int'
+            })
+            const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
+            const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
+            expect(await storageManager.collection('object').countObjects({})).toEqual(2)
+        })
+
+        it('should be able to count objects filtered by field equality', { shouldSupport: ['count'] }, async function(context : TestContext)  {
+            const { storageManager } = await setupOperatorTest({
+                context,
+                fieldType: 'int'
+            })
+            const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
+            const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
+            expect(await storageManager.collection('object').countObjects({ field: 2 })).toEqual(1)
+        })
+
+        it('should be able to count objects filtered by field $lt comparison', { shouldSupport: ['count'] }, async function(context : TestContext)  {
+            const { storageManager } = await setupOperatorTest({
+                context,
+                fieldType: 'int'
+            })
+            const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
+            const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
+            expect(await storageManager.collection('object').countObjects({ field: {$lt: 2} })).toEqual(1)
         })
     })
 }
