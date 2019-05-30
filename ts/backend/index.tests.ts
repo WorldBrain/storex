@@ -22,8 +22,7 @@ export class FakeStorageBackend extends StorageBackend {
 
     configure({ registry }: { registry: StorageRegistry }) {
         super.configure({ registry })
-        registry.fieldTypes.registerType('random-key', FakeRandomKeyField)
-
+        
         this.createObject = augmentCreateObject(this.createObject.bind(this), { registry })
     }
 

@@ -232,10 +232,29 @@ export default class StorageRegistry extends EventEmitter {
         Object.values(this.collections).forEach(sourceCollectionDef => {
             for (const relationship of sourceCollectionDef.relationships) {
                 if (isConnectsRelationship(relationship)) {
-                    this.collections[relationship.connects[0]].reverseRelationshipsByAlias[relationship.reverseAliases[0]] = relationship
-                    this.collections[relationship.connects[1]].reverseRelationshipsByAlias[relationship.reverseAliases[1]] = relationship
+                    const connected = [this.collections[relationship.connects[0]], this.collections[relationship.connects[1]]]
+                    for (let idx = 0; idx < connected.length; ++idx) {
+                        if (!connected[idx]) {
+                            throw new Error(
+                                `Collection '${sourceCollectionDef.name!}' defined ` +
+                                `a 'connects' relation involving non-existing ` +
+                                `collection '${relationship.connects[idx]}`
+                            )
+                        }
+                    }
+
+                    connected[0].reverseRelationshipsByAlias[relationship.reverseAliases[0]] = relationship
+                    connected[1].reverseRelationshipsByAlias[relationship.reverseAliases[1]] = relationship
                 } else if (isChildOfRelationship(relationship)) {
                     const targetCollectionDef = this.collections[relationship.targetCollection]
+                    if (!targetCollectionDef) {
+                        const relationshipType = relationship.single ? 'singleChildOf' : 'childOf'
+                        throw new Error(
+                            `Collection '${sourceCollectionDef.name!}' defined ` +
+                            `a '${relationshipType}' relationship to non-existing ` +
+                            `collection '${relationship.targetCollection}`
+                        )
+                    }
                     targetCollectionDef.reverseRelationshipsByAlias[relationship.reverseAlias] = relationship
                 }
             }

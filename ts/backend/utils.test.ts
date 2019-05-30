@@ -32,7 +32,7 @@ describe('StorageBackend utils', () => {
                         id: 'userEmailVerificationCode-1',
                         userEmail: 'userEmail-1',
                         expires,
-                        code: 'no-so-random-key-1'
+                        code: 'bla'
                     }
                 }
             ]
@@ -60,7 +60,7 @@ describe('StorageBackend utils', () => {
                 object: {
                     userEmail: 'userEmail-1',
                     expires: expires,
-                    code: 'no-so-random-key-1'
+                    code: 'bla'
                 },
             }]
         )
