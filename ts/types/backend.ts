@@ -20,7 +20,7 @@ export type BatchOperationBase = {operation : string, placeholder? : string, rep
 export type CollectionBatchOperation = BatchOperationBase & {collection : string}
 export type CreateObjectBatchOperation = CollectionBatchOperation & {operation : 'createObject', args : any}
 export type UpdateObjectsBatchOperation = CollectionBatchOperation & {operation : 'updateObjects', where : any, updates : any}
-export type DeleteObjectsBatchOperation = CollectionBatchOperation & {operation : 'deleteObjects', where : any, updates : any}
+export type DeleteObjectsBatchOperation = CollectionBatchOperation & {operation : 'deleteObjects', where : any}
 
 export type IgnoreCaseOptions = {ignoreCase? : string[]}
 export type ReverseOptions = {reverse? : boolean}
