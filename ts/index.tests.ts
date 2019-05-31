@@ -1,7 +1,9 @@
 import * as expect from 'expect'
 import StorageManager from '.'
-import { StorageBackend, FieldType } from './types'
+import { StorageBackend, FieldType, CollectionFields, Relationship, PrimitiveFieldType } from './types'
 import { StorageBackendFeatureSupport } from './types/backend-features';
+import { FieldTypeRegistry } from './fields';
+import { Field } from './fields/types';
 
 export type StorexBackendTestBackendCreator = (context : StorexBackendTestContext) => Promise<StorageBackend>
 export interface StorexBackendTestContext {
@@ -224,7 +226,7 @@ export function testStorageBackendFullTextSearch(backendCreator: StorexBackendTe
                 version: new Date(2018, 9, 13),
                 fields: {
                     url: {type: 'string'},
-                    text: {type: 'string'},
+                    text: {type: 'text'},
                 },
                 indices: [{field: 'text'}]
             }
@@ -265,23 +267,29 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
     }
 
     async function setupChildOfTest(options : {
-        backend : StorageBackend, userFields?
+        backend : StorageBackend,
+        userFields? : CollectionFields, emailFields? : CollectionFields,
+        relationshipType? : 'childOf' | 'singleChildOf',
+        relationshipOptions? : Partial<Relationship>
     }) {
+        const relationshipOptions = options.relationshipOptions || {}
+        const relationshipType = options.relationshipType || 'childOf'
+
         const storageManager = new StorageManager({ backend: options.backend })
         storageManager.registry.registerCollections({
             user: {
                 version: new Date(2019, 1, 1),
                 fields: options.userFields || {
-                    displayName: {type: 'string'}
+                    displayName: { type: 'string' }
                 }
             },
             email: {
                 version: new Date(2019, 1, 1),
-                fields: {
-                    address: {type: 'string'}
+                fields: options.emailFields || {
+                    address: { type: 'string' }
                 },
                 relationships: [
-                    {childOf: 'user'}
+                    { [relationshipType as any]: 'user', ...relationshipOptions } as any
                 ]
             }
         })
@@ -291,16 +299,17 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
     }
 
     async function setupOperatorTest(options : {
-        context : TestContext, fieldType : FieldType,
+        context : TestContext, fieldType? : FieldType,
+        fieldTypes? : FieldTypeRegistry, fields? : CollectionFields
         shouldSupport? : string[], testContext? : Mocha.ITestCallbackContext
     }) {
         await skipIfNotSupported({ backend: options.context.backend, ...options })
-        const storageManager = new StorageManager({ backend: options.context.backend })
+        const storageManager = new StorageManager({ backend: options.context.backend, fieldTypes: options.fieldTypes })
         storageManager.registry.registerCollections({
             object: {
                 version: new Date(2019, 1, 1),
-                fields: {
-                    field: {type: options.fieldType}
+                fields: options.fields || {
+                    field: { type: options.fieldType }
                 }
             },
         })
@@ -701,6 +710,120 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             const { object: object1 } = await storageManager.collection('object').createObject({field: 1})
             const { object: object2 } = await storageManager.collection('object').createObject({field: 2})
             expect(await storageManager.collection('object').countObjects({ field: {$lt: 2} })).toEqual(1)
+        })
+    })
+
+    describe('relationships', () => {
+        for (const relationshipType of ['childOf', 'singleChildOf'] as ('childOf' | 'singleChildOf')[]) {
+            it(`should correctly store objects with ${relationshipType} relationships with a custom fieldName`, async function(context : TestContext) {
+                const { storageManager } = await setupChildOfTest({
+                    backend: context.backend,
+                    relationshipType, relationshipOptions: { fieldName: 'userId' }
+                })
+
+                const { object: user } = await storageManager.collection('user').createObject({ displayName: 'Joe' })
+                const { object: email } = await storageManager.collection('email').createObject({ user: user.id, address: 'joe@joe.com' })
+                expect(email).toEqual({ id: expect.anything(), address: 'joe@joe.com', user: user.id })
+            })
+
+            it(`should correctly find objects filtered by ${relationshipType} relationships with a custom fieldName`, async function(context : TestContext) {
+                const { storageManager } = await setupChildOfTest({
+                    backend: context.backend,
+                    relationshipType, relationshipOptions: { fieldName: 'userId' }
+                })
+
+                const { object: user } = await storageManager.collection('user').createObject({ displayName: 'Joe' })
+                const { object: email } = await storageManager.collection('email').createObject({ user: user.id, address: 'joe@joe.com' })
+                expect(await storageManager.collection('email').findObject({ user: user.id })).toEqual(email)
+            })
+
+            it(`should correctly delete objects filtered by ${relationshipType} relationships with a custom fieldName`, async function(context : TestContext) {
+                const { storageManager } = await setupChildOfTest({
+                    backend: context.backend,
+                    relationshipType, relationshipOptions: { fieldName: 'userId' }
+                })
+
+                const { object: user } = await storageManager.collection('user').createObject({ displayName: 'Joe' })
+                const { object: user2 } = await storageManager.collection('user').createObject({ displayName: 'Jack' })
+                const { object: email } = await storageManager.collection('email').createObject({ user: user.id, address: 'joe@joe.com' })
+                const { object: email2 } = await storageManager.collection('email').createObject({ user: user.id, address: 'jack@joe.com' })
+
+                await storageManager.collection('email').deleteObjects({ user: user2.id })
+                expect(await storageManager.collection('email').findObject({ user: user.id })).toEqual(email)
+                expect(await storageManager.collection('email').findObject({ user: user2.id })).toEqual(null)
+            })
+        }
+    })
+
+    describe('custom fields', () => {
+        class RandomKeyField extends Field {
+            primitiveType : PrimitiveFieldType = 'string'
+
+            async prepareForStorage(value : any) {
+                return `Stored: ${value}`
+            }
+
+            async prepareFromStorage(value : any) {
+                return `Found: ${value}`
+            }
+        }
+
+        async function setupTest(context : TestContext) {
+            const fieldTypes = new FieldTypeRegistry()
+            fieldTypes.registerType('random-key', RandomKeyField)
+
+            const { storageManager } = await setupOperatorTest({ context, fieldTypes, fields: {
+                fieldString : { type: 'string' },
+                fieldRandomKey : { type: 'random-key' },
+            } })
+            return { storageManager }
+        }
+
+        it('should correctly process custom fields on create and find', async (context : TestContext) => {
+            const { storageManager } = await setupTest(context)
+            const { object: newObject } = await storageManager.collection('object').createObject({
+                fieldString: 'test',
+                fieldRandomKey: 'random'
+            })
+            expect(newObject).toEqual({
+                id: expect.anything(),
+                fieldString: 'test',
+                fieldRandomKey: 'random'
+            })
+
+            const foundObjects = await storageManager.collection('object').findObjects({})
+            expect(foundObjects).toEqual([{
+                id: newObject.id,
+                fieldString: 'test',
+                fieldRandomKey: 'Found: Stored: random',
+            }])
+        })
+
+        it('should not try to process custom fields that are not present on object when doing an update', async (context : TestContext) => {
+            const { storageManager } = await setupTest(context)
+            const { object: newObject } = await storageManager.collection('object').createObject({
+                fieldString: 'test'
+            })
+            expect(newObject).toEqual({
+                id: expect.anything(),
+                fieldString: 'test'
+            })
+
+            const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectsBeforeUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'test',
+                fieldRandomKey: 'Found: Stored: undefined',
+            }])
+
+            // await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
+
+            // const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
+            // expect(foundObjectAfterUpdate).toEqual([{
+            //     id: newObject.id,
+            //     fieldString: 'new test',
+            //     fieldRandomKey: 'Found: Stored: undefined',
+            // }])
         })
     })
 }
