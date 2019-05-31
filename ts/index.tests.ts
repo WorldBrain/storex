@@ -816,14 +816,14 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
                 fieldRandomKey: 'Found: Stored: undefined',
             }])
 
-            // await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
+            await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
 
-            // const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
-            // expect(foundObjectAfterUpdate).toEqual([{
-            //     id: newObject.id,
-            //     fieldString: 'new test',
-            //     fieldRandomKey: 'Found: Stored: undefined',
-            // }])
+            const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectAfterUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'new test',
+                fieldRandomKey: 'Found: Stored: Found: Stored: undefined',
+            }])
         })
     })
 }
