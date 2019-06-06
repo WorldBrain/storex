@@ -856,7 +856,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(foundObjectAfterUpdate).toEqual([{
                 id: newObject.id,
                 fieldString: 'new test',
-                fieldRandomKey: 'Found: Stored: Found: Stored: undefined',
+                fieldRandomKey: 'Found: Stored: undefined',
             }])
         })
     })
