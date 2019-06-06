@@ -622,6 +622,40 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         })
 
         it('should support batch operations with compound primary keys')
+
+        it('should support batches with updateObjects operations', { shouldSupport: ['executeBatch'] }, async function (context : TestContext) {
+            const { storageManager } = await setupChildOfTest({ backend: context.backend })
+            const { object: object1 } = await storageManager.collection('user').createObject({displayName: 'Jack'})
+            const { object: object2 } = await storageManager.collection('user').createObject({displayName: 'Jane'})
+            await storageManager.operation('executeBatch', [
+                { operation: 'updateObjects', collection: 'user', where: {id: object1.id}, updates: {displayName: 'Jack 2'} },
+                { operation: 'updateObjects', collection: 'user', where: {id: object2.id}, updates: {displayName: 'Jane 2'} },
+            ])
+            expect([
+                await storageManager.collection('user').findOneObject({id: object1.id}),
+                await storageManager.collection('user').findOneObject({id: object2.id}),
+            ]).toEqual([
+                {id: object1.id, displayName: 'Jack 2'},
+                {id: object2.id, displayName: 'Jane 2'},
+            ])
+        })
+
+        it('should support batches with deleteObjects operations', { shouldSupport: ['executeBatch'] }, async function (context : TestContext) {
+            const { storageManager } = await setupChildOfTest({ backend: context.backend })
+            const { object: object1 } = await storageManager.collection('user').createObject({displayName: 'Jack'})
+            const { object: object2 } = await storageManager.collection('user').createObject({displayName: 'Jane'})
+            await storageManager.operation('executeBatch', [
+                { operation: 'deleteObjects', collection: 'user', where: {id: object1.id} },
+                { operation: 'deleteObjects', collection: 'user', where: {id: object2.id} },
+            ])
+            expect([
+                await storageManager.collection('user').findOneObject({id: object1.id}),
+                await storageManager.collection('user').findOneObject({id: object2.id}),
+            ]).toEqual([
+                null,
+                null,
+            ])
+        })
     })
 
     describe('complex creates', () => {
