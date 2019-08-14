@@ -1,4 +1,4 @@
-import * as expect from 'expect'
+import expect from 'expect'
 import StorageManager from '.'
 import { StorageBackend, FieldType, CollectionFields, Relationship, PrimitiveFieldType } from './types'
 import { StorageBackendFeatureSupport } from './types/backend-features';
