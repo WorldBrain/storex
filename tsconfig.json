@@ -5,6 +5,8 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "noImplicitAny": false,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
         "removeComments": true,
         "lib": [
             "es2017",

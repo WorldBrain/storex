@@ -1,4 +1,4 @@
-import * as expect from 'expect'
+import expect from 'expect'
 import { StorageBackend, StorageBackendPlugin, _parseIdentifier, _validateOperationRegistration } from "./backend";
 import { createTestStorageManager } from '../index.tests';
 import StorageManager from '..';
