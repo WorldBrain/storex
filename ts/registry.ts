@@ -144,27 +144,19 @@ export default class StorageRegistry extends EventEmitter {
             def.fields[fieldName]._index = indexDefIndex
         }
         const flagIndexSourceField = (indexSource: IndexSourceField, indexDefIndex: number) => {
-            if (isRelationshipReference(indexSource)) {
-                const relationship = def.relationshipsByAlias[indexSource.relationship]
-                if (isConnectsRelationship(relationship)) {
-                    relationship.fieldNames.forEach(fieldName => flagField(fieldName, indexDefIndex))
-                } else if (isChildOfRelationship(relationship)) {
-                    flagField(relationship.fieldName, indexDefIndex)
-                }
-            } else {
-                flagField(<string>indexSource, indexDefIndex)
+            if (typeof indexSource === 'string') {
+                flagField(indexSource, indexDefIndex)
             }
         }
 
         const indices = def.indices || []
-        indices.forEach(({ field: indexSourceFields, pk: isPk }, indexDefIndex) => {
+        indices.forEach((indexDef, indexDefIndex) => {
+            const { field: indexSourceFields } = indexDef
             // Compound indexes need to flag all specified fields
             if (indexSourceFields instanceof Array) {
                 indexSourceFields.forEach(indexSource => { flagIndexSourceField(indexSource, indexDefIndex) })
-            } else if (typeof indexSourceFields === 'string') {
-                flagField(indexSourceFields, indexDefIndex)
             } else {
-                throw Error('Got an invalid index for this collection: ' + collectionName)
+                flagIndexSourceField(indexSourceFields, indexDefIndex)
             }
         })
     }
@@ -204,10 +196,6 @@ export default class StorageRegistry extends EventEmitter {
                     pluralize(relationship.connects[1]),
                     pluralize(relationship.connects[0]),
                 ]
-
-                def.fields[relationship.fieldNames[0]] = { type: 'foreign-key' }
-                def.fields[relationship.fieldNames[1]] = { type: 'foreign-key' }
-                def.indices.push({ field: relationship.fieldNames })
             } else if (isChildOfRelationship(relationship)) {
                 relationship.sourceCollection = name
                 relationship.targetCollection = getChildOfRelationshipTarget(relationship)
@@ -220,8 +208,6 @@ export default class StorageRegistry extends EventEmitter {
                 }
 
                 relationship.fieldName = relationship.fieldName || `${relationship.alias}Rel`
-                def.fields[relationship.fieldName] = { type: 'foreign-key' }
-                def.indices.push({ field: relationship.fieldName })
             } else {
                 throw new Error("Invalid relationship detected: " + JSON.stringify(relationship))
             }
