@@ -137,6 +137,10 @@ async function skipIfNotSupported(options : {
 }
 
 export function testStorageBackend(backendCreator: StorexBackendTestBackendCreator, {fullTextSearch} : {fullTextSearch? : boolean} = {}) {
+    describe('Setup', () => {
+        testStorageBackendSetup(backendCreator)
+    })
+    
     describe('Individual operations', () => {
         testStorageBackendOperations(backendCreator)
     })
@@ -150,6 +154,172 @@ export function testStorageBackend(backendCreator: StorexBackendTestBackendCreat
             testStorageBackendFullTextSearch(backendCreator)
         })
     }
+}
+
+export function testStorageBackendSetup(backendCreator: StorexBackendTestBackendCreator) {
+    const it = makeTestFactory(backendCreator)
+    
+    it('should throw no errors trying to set up a collection with indexed fields', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            pages: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    url: {type: 'string'},
+                    text: {type: 'text'},
+                },
+                indices: [{field: 'text'}]
+            }
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+
+    it('should throw no errors trying to set up a collection with indexed childOf relations', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page' }
+                ],
+                indices: [
+                    { field: { relationship: 'page' } }
+                ]
+            }
+
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+
+    it('should throw no errors trying to set up a collection with indexed childOf relations with custom aliases', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page', alias: 'thePage' }
+                ],
+                indices: [
+                    { field: { relationship: 'thePage' } }
+                ]
+            }
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+    
+    it('should throw no errors trying to set up a collection with indexed childOf relations with custom aliases and fieldNames', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page', alias: 'thePage', fieldName: 'thePageField' }
+                ],
+                indices: [
+                    { field: { relationship: 'thePage' } }
+                ]
+            }
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+
+    it('should throw no errors trying to set up a collection with indexed singleChildOf relations', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page' }
+                ],
+                indices: [
+                    { field: { relationship: 'page' } }
+                ]
+            }
+
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+
+    it('should throw no errors trying to set up a collection with indexed singleChildOf relations with custom aliases', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page', alias: 'thePage' }
+                ],
+                indices: [
+                    { field: { relationship: 'thePage' } }
+                ]
+            }
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
+    
+    it('should throw no errors trying to set up a collection with indexed singleChildOf relations with custom aliases and fieldNames', async (context : TestContext) => {
+        const storageManager = new StorageManager({ backend: context.backend })
+        storageManager.registry.registerCollections({
+            page: {
+                version: new Date(2018, 9, 13),
+                fields: {
+                    text: {type: 'text'},
+                },
+            },
+            note: {
+                version: new Date(2018, 9, 13),
+                fields: {},
+                relationships: [
+                    { childOf: 'page', alias: 'thePage', fieldName: 'thePageField' }
+                ],
+                indices: [
+                    { field: { relationship: 'thePage' } }
+                ]
+            }
+        })
+        await storageManager.finishInitialization()
+        await storageManager.backend.migrate()
+    })
 }
 
 export function testStorageBackendWithAuthExample(backendCreator: StorexBackendTestBackendCreator) {
