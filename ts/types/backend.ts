@@ -4,6 +4,8 @@ import { isRelationshipReference } from "./relationships";
 
 export type CreateSingleOptions = DBNameOptions
 export type CreateSingleResult = {object? : any}
+export type CreateManyResult = {objects? : any[]}
+export type CreateManyOptions = DBNameOptions & {withNestedObjects: boolean}
 export type FindSingleOptions = DBNameOptions & IgnoreCaseOptions & ReverseOptions & {fields?: string[]}
 export type FindManyOptions = FindSingleOptions & PaginationOptions & SortingOptions
 export type CountOptions = DBNameOptions & IgnoreCaseOptions
@@ -30,6 +32,7 @@ export type SortingOptions = {order? : Array<[string, 'asc' | 'desc']>}
 
 export const COLLECTION_OPERATIONS = new Set([
     'createObject',
+    'rawCreateObjects',
     'findObject',
     'findObjects',
     'countObjects',
@@ -79,6 +82,7 @@ export abstract class StorageBackend {
     async migrate({database} : {database?} = {}) : Promise<any> {}
 
     abstract async createObject(collection : string, object, options? : CreateSingleOptions)
+    abstract async rawCreateObjects(collection : string, objects: any[], options : CreateManyOptions)
 
     abstract findObjects<T>(collection : string, query, options? : FindManyOptions) : Promise<Array<T>>
     async findObject<T>(collection : string, query, options? : FindSingleOptions) : Promise<T | null> {
@@ -91,7 +95,7 @@ export abstract class StorageBackend {
     }
 
     /**
-     * Note that this is a naiive implementation that is not very space efficient.
+     * Note that this is a naive implementation that is not very space efficient.
      * It is recommended to override this implementation in storex backends with
      * DB-native queries.
      */

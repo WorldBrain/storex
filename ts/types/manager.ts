@@ -1,4 +1,4 @@
-import { StorageRegistry } from "..";
+import {CreateManyOptions, CreateManyResult, StorageRegistry} from "..";
 import {
     StorageBackend,
     CreateSingleOptions,
@@ -18,6 +18,7 @@ import {
 
 export interface StorageCollection {
     createObject(object, options?: CreateSingleOptions): Promise<CreateSingleResult>
+    rawCreateObjects(objects, options: CreateManyOptions): Promise<CreateManyResult>
     findOneObject<T>(query, options?: FindSingleOptions): Promise<T | null>
     findObject<T>(query, options?: FindSingleOptions): Promise<T | null>
     findObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
