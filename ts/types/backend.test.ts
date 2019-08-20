@@ -8,6 +8,7 @@ class DummyStorageBackend extends StorageBackend {
     dummmy = 'test'
 
     async createObject() {}
+    async rawCreateObjects() {}
     async findObjects() { return [] }
     async updateObjects() {}
     async deleteObjects() {}

@@ -359,6 +359,22 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             })
             expect(await storageManager.collection('user').findOneObject({isActive: false})).toBe(null)
         })
+
+        it('should be able to bulk create objects and find them again', async function(context : TestContext) {
+            const { storageManager } = await setupUserAdminTest({ context })
+            const data = [
+                {identifier: 'email:joe@doe.com', isActive: true, passwordHash: '123'},
+                {identifier: 'email:jane@doe.com', isActive: true, passwordHash: '456'},
+            ]
+            const { objects } = await storageManager.collection('user').rawCreateObjects(data, {withNestedObjects: false})
+
+            const foundObjects = await storageManager.collection('user').findObjects({isActive: true})
+            expect(foundObjects).toEqual(data.map((record,index) => {
+                record['id'] = index + 1;
+                return record
+            }))
+            expect(await storageManager.collection('user').findOneObject({isActive: false})).toBe(null)
+        })
     })
 
     describe('where clause operators', () => {
