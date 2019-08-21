@@ -960,7 +960,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
     })
 
     describe('custom fields', () => {
-        class RandomKeyField extends Field {
+        class ReadWriteCustomField extends Field {
             primitiveType : PrimitiveFieldType = 'string'
 
             async prepareForStorage(value : any) {
@@ -971,40 +971,51 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
                 return `Found: ${value}`
             }
         }
+        class WriteOnlyCustomField extends Field {
+            primitiveType : PrimitiveFieldType = 'string'
 
-        async function setupTest(context : TestContext) {
+            async prepareForStorage(value : any) {
+                return `Stored: ${value}`
+            }
+        }
+
+        async function setupTest(context : TestContext, options : { customField : new () => Field }) {
             const fieldTypes = new FieldTypeRegistry()
-            fieldTypes.registerType('random-key', RandomKeyField)
+            fieldTypes.registerType('random-key', options.customField)
 
             const { storageManager } = await setupOperatorTest({ context, fieldTypes, fields: {
                 fieldString : { type: 'string' },
-                fieldRandomKey : { type: 'random-key' },
+                fieldCustom : { type: 'random-key' },
             } })
             return { storageManager }
         }
 
         it('should correctly process custom fields on create and find', async (context : TestContext) => {
-            const { storageManager } = await setupTest(context)
+            const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
             const { object: newObject } = await storageManager.collection('object').createObject({
                 fieldString: 'test',
-                fieldRandomKey: 'random'
+                fieldCustom: 'bla'
             })
             expect(newObject).toEqual({
                 id: expect.anything(),
                 fieldString: 'test',
-                fieldRandomKey: 'random'
+                fieldCustom: 'bla'
             })
 
             const foundObjects = await storageManager.collection('object').findObjects({})
             expect(foundObjects).toEqual([{
                 id: newObject.id,
                 fieldString: 'test',
-                fieldRandomKey: 'Found: Stored: random',
+                fieldCustom: 'Found: Stored: bla',
             }])
         })
 
-        it('should not try to process custom fields that are not present on object when doing an update', async (context : TestContext) => {
-            const { storageManager } = await setupTest(context)
+        it(
+            'should not try to process custom fields that are not present on object when ' +
+            'doing an update on an object without a custom field that modifies both reads and writes present',
+            async (context : TestContext) =>
+        {
+            const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
             const { object: newObject } = await storageManager.collection('object').createObject({
                 fieldString: 'test'
             })
@@ -1017,7 +1028,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(foundObjectsBeforeUpdate).toEqual([{
                 id: newObject.id,
                 fieldString: 'test',
-                fieldRandomKey: 'Found: Stored: undefined',
+                fieldCustom: 'Found: Stored: undefined',
             }])
 
             await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
@@ -1026,7 +1037,104 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(foundObjectAfterUpdate).toEqual([{
                 id: newObject.id,
                 fieldString: 'new test',
-                fieldRandomKey: 'Found: Stored: undefined',
+                fieldCustom: 'Found: Stored: undefined',
+            }])
+        })
+
+        it(
+            'should not try to process custom fields that are not present on object when ' +
+            'doing an update on an object with a custom field that modifies both reads and writes present',
+            async (context : TestContext) =>
+        {
+            const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
+            const { object: newObject } = await storageManager.collection('object').createObject({
+                fieldString: 'test',
+                fieldCustom: 'bla'
+            })
+            expect(newObject).toEqual({
+                id: expect.anything(),
+                fieldString: 'test',
+                fieldCustom: 'bla',
+            })
+
+            const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectsBeforeUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'test',
+                fieldCustom: 'Found: Stored: bla',
+            }])
+
+            await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
+
+            const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectAfterUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'new test',
+                fieldCustom: 'Found: Stored: bla',
+            }])
+        })
+
+        it(
+            'should not try to process custom fields that are not present on object when ' +
+            'doing an update without a custom field that only modifies writes present',
+            async (context : TestContext) =>
+        {
+            const { storageManager } = await setupTest(context, { customField: WriteOnlyCustomField })
+            const { object: newObject } = await storageManager.collection('object').createObject({
+                fieldString: 'test'
+            })
+            expect(newObject).toEqual({
+                id: expect.anything(),
+                fieldString: 'test'
+            })
+
+            const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectsBeforeUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'test',
+                fieldCustom: 'Stored: undefined',
+            }])
+
+            await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
+
+            const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectAfterUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'new test',
+                fieldCustom: 'Stored: undefined',
+            }])
+        })
+
+        it(
+            'should not try to process custom fields that are not present on object when ' +
+            'doing an update with a custom field that only modifies writes present',
+            async (context : TestContext) =>
+        {
+            const { storageManager } = await setupTest(context, { customField: WriteOnlyCustomField })
+            const { object: newObject } = await storageManager.collection('object').createObject({
+                fieldString: 'test',
+                fieldCustom: 'bla',
+            })
+            expect(newObject).toEqual({
+                id: expect.anything(),
+                fieldString: 'test',
+                fieldCustom: 'bla',
+            })
+
+            const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectsBeforeUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'test',
+                fieldCustom: 'Stored: bla',
+            }])
+
+            await storageManager.collection('object').updateObjects({ id: newObject.id }, { fieldString: 'new test' })
+
+            const foundObjectAfterUpdate = await storageManager.collection('object').findObjects({})
+            expect(foundObjectAfterUpdate).toEqual([{
+                id: newObject.id,
+                fieldString: 'new test',
+                fieldCustom: 'Stored: bla',
             }])
         })
     })
