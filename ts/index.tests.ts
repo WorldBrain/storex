@@ -985,12 +985,12 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
 
             const { storageManager } = await setupOperatorTest({ context, fieldTypes, fields: {
                 fieldString : { type: 'string' },
-                fieldCustom : { type: 'random-key' },
+                fieldCustom : { type: 'random-key', optional: true },
             } })
             return { storageManager }
         }
 
-        it('should correctly process custom fields on create and find', async (context : TestContext) => {
+        it('should correctly process custom fields on create and find', { shouldSupport: ['customFields'] }, async (context : TestContext) => {
             const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
             const { object: newObject } = await storageManager.collection('object').createObject({
                 fieldString: 'test',
@@ -1013,6 +1013,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         it(
             'should not try to process custom fields that are not present on object when ' +
             'doing an update on an object without a custom field that modifies both reads and writes present',
+            { shouldSupport: ['customFields'] },
             async (context : TestContext) =>
         {
             const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
@@ -1044,6 +1045,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         it(
             'should not try to process custom fields that are not present on object when ' +
             'doing an update on an object with a custom field that modifies both reads and writes present',
+            { shouldSupport: ['customFields'] },
             async (context : TestContext) =>
         {
             const { storageManager } = await setupTest(context, { customField: ReadWriteCustomField })
@@ -1077,6 +1079,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         it(
             'should not try to process custom fields that are not present on object when ' +
             'doing an update without a custom field that only modifies writes present',
+            { shouldSupport: ['customFields'] },
             async (context : TestContext) =>
         {
             const { storageManager } = await setupTest(context, { customField: WriteOnlyCustomField })
@@ -1108,6 +1111,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         it(
             'should not try to process custom fields that are not present on object when ' +
             'doing an update with a custom field that only modifies writes present',
+            { shouldSupport: ['customFields'] },
             async (context : TestContext) =>
         {
             const { storageManager } = await setupTest(context, { customField: WriteOnlyCustomField })
