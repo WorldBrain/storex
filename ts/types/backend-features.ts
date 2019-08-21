@@ -15,4 +15,5 @@ export interface StorageBackendFeatureSupport {
   sortWithIndependentRangeFilter? : boolean
   collectionGrouping? : boolean
   collectionNesting? : boolean
+  customFields? : boolean
 }
