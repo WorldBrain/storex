@@ -950,7 +950,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
                 const { object: user } = await storageManager.collection('user').createObject({ displayName: 'Joe' })
                 const { object: user2 } = await storageManager.collection('user').createObject({ displayName: 'Jack' })
                 const { object: email } = await storageManager.collection('email').createObject({ user: user.id, address: 'joe@joe.com' })
-                const { object: email2 } = await storageManager.collection('email').createObject({ user: user.id, address: 'jack@joe.com' })
+                const { object: email2 } = await storageManager.collection('email').createObject({ user: user2.id, address: 'jack@joe.com' })
 
                 await storageManager.collection('email').deleteObjects({ user: user2.id })
                 expect(await storageManager.collection('email').findObject({ user: user.id })).toEqual(email)
