@@ -1,6 +1,6 @@
 import expect from 'expect'
 import StorageManager from '.'
-import { StorageBackend, FieldType, CollectionFields, Relationship, PrimitiveFieldType } from './types'
+import { StorageBackend, FieldType, CollectionFields, Relationship, PrimitiveFieldType, CollectionDefinitionMap } from './types'
 import { StorageBackendFeatureSupport } from './types/backend-features';
 import { FieldTypeRegistry } from './fields';
 import { Field } from './fields/types';
@@ -446,7 +446,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
         const relationshipType = options.relationshipType || 'childOf'
 
         const storageManager = new StorageManager({ backend: options.backend })
-        storageManager.registry.registerCollections({
+        const collectionDefinitions: CollectionDefinitionMap = {
             user: {
                 version: new Date(2019, 1, 1),
                 fields: options.userFields || {
@@ -462,7 +462,24 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
                     { [relationshipType as any]: 'user', ...relationshipOptions } as any
                 ]
             }
-        })
+        }
+
+        if (options.backend.supports('compoundPrimaryKeys')) {
+            collectionDefinitions.tag = {
+                version: new Date(2019, 1, 1),
+                fields: {
+                    name: { type: 'string' },
+                },
+                relationships: [
+                    { childOf: 'email', reverseAlias: 'tags', alias: 'email' },
+                ],
+                indices: [
+                    { field: ['name', 'email'], pk: true },
+                ],
+            }
+        }
+
+        storageManager.registry.registerCollections(collectionDefinitions)
         await storageManager.finishInitialization()
         await storageManager.backend.migrate()
         return { storageManager }
@@ -791,7 +808,27 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             await storageManager.operation('executeBatch', [])
         })
 
-        it('should support batch operations with compound primary keys')
+        it('should support batch operations with compound primary keys', { shouldSupport: ['compoundPrimaryKeys'] }, async function (context) {
+            const { storageManager } = await setupChildOfTest({ backend: context.backend })
+            expect(storageManager.registry.collections['tag'].pkIndex)
+                .toEqual(expect.arrayContaining(['name', 'email']))
+
+            const { object: user1 } = await storageManager.collection('user').createObject({displayName: 'Jack'})
+            const { object: email1 } = await storageManager.collection('email').createObject({ user: user1.id, address: 'jack@jack.com' })
+
+            await storageManager.operation('executeBatch', [
+                { operation: 'createObject', collection: 'tag', args: { email: email1.id, name: 'cool' } },
+                { operation: 'createObject', collection: 'tag', args: { email: email1.id, name: 'groovy' } },
+                { operation: 'createObject', collection: 'tag', args: { email: email1.id, name: 'rad' } },
+            ])
+
+            expect(await storageManager.collection('tag').findObjects({ email: email1.id }))
+                .toEqual(expect.arrayContaining([
+                    { email: email1.id, name: 'cool' },
+                    { email: email1.id, name: 'groovy' },
+                    { email: email1.id, name: 'rad' },
+                ]))
+        })
 
         it('should support batches with updateObjects operations', { shouldSupport: ['executeBatch'] }, async function (context : TestContext) {
             const { storageManager } = await setupChildOfTest({ backend: context.backend })
