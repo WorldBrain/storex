@@ -3,6 +3,7 @@ export interface StorageBackendFeatureSupport {
   count? : boolean
   ignoreCase? : boolean
   fullTextSearch? : boolean
+  rawCreateObjects? : boolean
   createWithRelationships? : boolean
   updateWithRelationships? : boolean
   relationshipFetching? : boolean
