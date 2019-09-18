@@ -530,7 +530,7 @@ export function testStorageBackendOperations(backendCreator : StorexBackendTestB
             expect(await storageManager.collection('user').findOneObject({isActive: false})).toBe(null)
         })
 
-        it('should be able to bulk create objects and find them again', async function(context : TestContext) {
+        it('should be able to bulk create objects and find them again', { shouldSupport: ['rawCreateObjects'] }, async function(context : TestContext) {
             const { storageManager } = await setupUserAdminTest({ context })
             const data = [
                 {identifier: 'email:joe@doe.com', isActive: true, passwordHash: '123'},
