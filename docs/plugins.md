@@ -1,6 +1,6 @@
 Storex allows you to implement custom operations on the back-end for application-specific functionality that you need to do on a lower level (directly execute an SQL statement for example), or include functionality you don't always want to include in your application (altering your schema structure for data migrations as an example.)
 
-```
+```typescript
 import StorageManager from "@worldbrain/storex";
 import { StorageBackendPlugin } from "@worldbrain/storex/lib/backend";
 import { SequelizeStorageBackend } from "@worldbrain/storex-backend-sequelize";
