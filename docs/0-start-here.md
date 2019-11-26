@@ -21,14 +21,14 @@ How it works
 
 You initialize a StorageBackend imported from its respective package:
 
-```
+```typescript
 import { DexieStorageBackend } from '@worldbrain/storex-backend-dexie'
 const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
 ```
 
 You construct the storage manager, which will give you access to the StorageRegistry and the collection objects to access your data:
 
-```
+```typescript
 const storageManager = new StorageManager({ backend: storageBackend })
 
 # More info about this below
@@ -49,7 +49,7 @@ const users = await storageManager.collection('user').findObjects({ name: 'Bob',
 ```
 
 Under the hood, the collection methods are convenience methods that call the central `storageManager.operation(...)` method:
-```
+```typescript
 await storageManager.operation('createObject', 'user', { name: 'bla' })
 await storageManager.operation('executeBatch', [
     { operation: 'createObject', collection: 'user', args: { name: 'Diane' } },
