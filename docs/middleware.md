@@ -1,6 +1,6 @@
 All CRUD operations under the hood use `StorageManager.operation()`, which then runs the operations through all configured middleware before calling `StorageBackend.operation()`. This is used by the device-to-device Sync functionality for example to log all database modifications to a separate log. `StorageMiddleware` usage looks like this:
 
-```
+```typescript
 import { StorageMiddleware } from '@worldbrain/storex/lib/types/middleware'
 
 export class LogMiddleware implements StorageMiddleware {

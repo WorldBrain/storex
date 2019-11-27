@@ -11,7 +11,7 @@ Creates a new object and any necessary child objects, cleaning and preparing nec
 
 **Example**:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),
@@ -35,7 +35,7 @@ Updates all objects matching `<filter>`, which a MongoDB-like filter.
 
 **Example**:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),
@@ -61,7 +61,7 @@ Deletes all objects from the database matching `<filter>`, which a MongoDB-like 
 
 **Example**:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),
@@ -88,7 +88,7 @@ Fetches all objects from a collection matching `filter`. Currently supported `op
 
 Example:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),
@@ -115,7 +115,7 @@ Fetches a single objects from a collection matching `filter`. Currently supporte
 
 Example:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),

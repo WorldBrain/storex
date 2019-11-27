@@ -1,6 +1,6 @@
 Collections are defined by calls to the StorageRegistry.registerCollection(s) function:
 
-```
+```typescript
 storageManager.registry.registerCollections({
     user: {
         version: new Date(2018, 11, 11),
@@ -52,7 +52,7 @@ You can define three kinds of relationships between collections. `singleChildOf`
 ### singleChildOf
 
 Creates a one-to-one relationship:
-```
+```typescript
 storageManager.registry.registerCollections({
     email: {
         version: new Date(2018, 11, 11),
@@ -89,7 +89,7 @@ const key = await storageManager.collection('activationCode').findOneObject({ema
 ### childOf
 
 Creates a one-to-many relationship:
-```
+```typescript
 storageManager.registry.registerCollections({
     user: {
         version: new Date(2018, 11, 11),
@@ -129,7 +129,7 @@ const emails = await storageManager.collection('activationCode').findObjects({us
 ### connects
 
 Creates a many-to-many relationship by explictly defining a connection between them:
-```
+```typescript
 storageManager.registry.registerCollections({
     user: {
         version: new Date(2018, 11, 11),
