@@ -1,4 +1,4 @@
-import {CreateManyOptions, CreateManyResult, StorageRegistry} from "..";
+import { CreateManyOptions, CreateManyResult, StorageRegistry } from "..";
 import {
     StorageBackend,
     CreateSingleOptions,
@@ -18,7 +18,7 @@ import {
 
 export interface StorageCollection {
     createObject(object, options?: CreateSingleOptions): Promise<CreateSingleResult>
-    rawCreateObjects(objects, options: CreateManyOptions): Promise<CreateManyResult>
+    rawCreateObjects(objects, options?: CreateManyOptions): Promise<CreateManyResult>
     findOneObject<T>(query, options?: FindSingleOptions): Promise<T | null>
     findObject<T>(query, options?: FindSingleOptions): Promise<T | null>
     findObjects<T>(query, options?: FindManyOptions): Promise<Array<T>>
@@ -38,7 +38,7 @@ export default interface StorageManagerInterface {
     registry: StorageRegistry
     backend: StorageBackend
 
-    finishInitialization() : Promise<void>
+    finishInitialization(): Promise<void>
     collection(collectionName: string): StorageCollection
-    operation(operationName : string, ...args) : Promise<any>
+    operation(operationName: string, ...args): Promise<any>
 }
