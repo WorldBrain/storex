@@ -137,7 +137,7 @@ export abstract class StorageBackend {
     }
 
     supports(feature: string) {
-        return CORE_OPERATIONS.has(feature) || !!this.features[feature] || !!this.customFeatures[feature]
+        return CORE_OPERATIONS.has(feature) || !!this.features[feature] || !!this.customFeatures[feature] || !!this.operations[feature]
     }
 
     async operation(operation: string, ...args) {
