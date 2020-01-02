@@ -141,26 +141,26 @@ export abstract class StorageBackend {
     }
 
     async operation(operation: string, ...args) {
-        const unsupported = () => {
-            throw new Error(`Unsupported storage backend operation: ${operation}`)
+        const unsupported = (reason: 'no-support-detected' | 'no-method-found' | 'no-registration-found') => {
+            throw new Error(`Unsupported storage backend operation: ${operation} (${reason})`)
         }
 
         if (!this.supports(operation)) {
-            unsupported()
+            unsupported('no-support-detected')
         }
 
         const parsedIdentifier = _parseIdentifier(operation)
         if (!parsedIdentifier.project && !parsedIdentifier.backend) {
             const method: Function = this[parsedIdentifier.operation]
             if (!method) {
-                unsupported()
+                unsupported('no-method-found')
             }
             return method.apply(this, args)
         }
 
         const registeredOperation = this.operations[operation]
         if (!registeredOperation) {
-            unsupported()
+            unsupported('no-registration-found')
         }
 
         return registeredOperation(...args)
