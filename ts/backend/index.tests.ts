@@ -34,7 +34,10 @@ export class FakeStorageBackend extends StorageBackend {
 
         const id = this.config.idGenerator(collection, object, options)
         this.createOperations.push({ object, id })
-        return { object: { ...object, [pkIndex]: id } }
+        return {
+            pk: id,
+            object: options.incObject ? { ...object, [pkIndex]: id } : undefined,
+        }
     }
 
     async findObjects() {
@@ -42,11 +45,11 @@ export class FakeStorageBackend extends StorageBackend {
     }
 
     async updateObjects() {
-
+        return { count: 1 }
     }
 
     async deleteObjects() {
-
+        return { count: 1 }
     }
 }
 
