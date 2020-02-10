@@ -400,7 +400,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         return { storageManager }
     }
 
-    async function setupOperatorTest(options: {
+    async function setupSimpleTest(options: {
         context: TestContext, fieldType?: FieldType,
         fieldTypes?: FieldTypeRegistry, fields?: CollectionFields
         shouldSupport?: string[], testContext?: Mocha.ITestCallbackContext
@@ -420,7 +420,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         return { storageManager }
     }
 
-    describe('creating and simple finding', () => {
+    describe('creating and finding', () => {
         it('should be able to create objects and find them again by pk', async function (context: TestContext) {
             const { storageManager } = await setupUserAdminTest({ context })
             const { object } = await storageManager.collection('user').createObject({ identifier: 'email:joe@doe.com', isActive: true })
@@ -428,7 +428,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const foundObject = await storageManager.collection('user').findOneObject({ id: object.id })
             expect(foundObject).toEqual({
                 id: object.id,
-                identifier: 'email:joe@doe.com', isActive: true
+                identifier: 'email:joe@doe.com', isActive: true,
+                passwordHash: null,
             })
 
             expect(await storageManager.collection('user').findOneObject({
@@ -444,7 +445,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const foundObject = await storageManager.collection('user').findOneObject({ identifier: 'email:joe@doe.com' })
             expect(foundObject).toEqual({
                 id: object.id,
-                identifier: 'email:joe@doe.com', isActive: true
+                identifier: 'email:joe@doe.com', isActive: true,
+                passwordHash: null,
             })
 
             expect(await storageManager.collection('user').findOneObject({ identifier: 'email:bla!!!' })).toEqual(null)
@@ -457,7 +459,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const foundObject = await storageManager.collection('user').findOneObject({ isActive: true })
             expect(foundObject).toEqual({
                 id: object.id,
-                identifier: 'email:joe@doe.com', isActive: true
+                identifier: 'email:joe@doe.com', isActive: true,
+                passwordHash: null,
             })
             expect(await storageManager.collection('user').findOneObject({ isActive: false })).toBe(null)
         })
@@ -468,7 +471,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 { identifier: 'email:joe@doe.com', isActive: true, passwordHash: '123' },
                 { identifier: 'email:jane@doe.com', isActive: true, passwordHash: '456' },
             ]
-            const { objects } = await storageManager.collection('user').rawCreateObjects(data)
+            const { objects } = await storageManager.operation('rawCreateObjects', 'user', data, { withNestedObjects: false })
 
             const foundObjects = await storageManager.collection('user').findObjects({ isActive: true })
             expect(foundObjects).toEqual(data.map((record, index) => {
@@ -479,11 +482,43 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
     })
 
+    describe('optional fields', () => {
+        it('should set fields to null when omitted during saving', async function (context: TestContext) {
+            const { storageManager } = await setupSimpleTest({
+                context, fields: {
+                    test: { type: 'string', optional: true }
+                }
+            })
+
+            const { object: createdObject } = await storageManager.collection('object').createObject({})
+            expect(createdObject.id).not.toBe(undefined)
+            expect(createdObject).toEqual({
+                id: createdObject.id,
+                test: null,
+            })
+        })
+
+        it('should set fields to null upon retrieval when omitted during saving', async function (context: TestContext) {
+            const { storageManager } = await setupSimpleTest({
+                context, fields: {
+                    test: { type: 'string', optional: true }
+                }
+            })
+
+            const { object: createdObject } = await storageManager.collection('object').createObject({})
+            const retrievedObject = await storageManager.collection('object').findObject({ id: createdObject.id })
+            expect(retrievedObject).toEqual({
+                id: createdObject.id,
+                test: null,
+            })
+        })
+    })
+
     describe('where clause operators', () => {
         function operatorTests(fieldType: FieldType) {
             describe(`field type: ${fieldType}`, () => {
                 it('should be able to find by $lt operator', async function (context: TestContext) {
-                    const { storageManager } = await setupOperatorTest({
+                    const { storageManager } = await setupSimpleTest({
                         context,
                         fieldType
                     })
@@ -498,7 +533,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 })
 
                 it('should be able to find by $lte operator', async function (context: TestContext) {
-                    const { storageManager } = await setupOperatorTest({
+                    const { storageManager } = await setupSimpleTest({
                         context,
                         fieldType
                     })
@@ -513,7 +548,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 })
 
                 it('should be able to find by $gt operator', async function (context: TestContext) {
-                    const { storageManager } = await setupOperatorTest({
+                    const { storageManager } = await setupSimpleTest({
                         context,
                         fieldType
                     })
@@ -528,7 +563,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 })
 
                 it('should be able to find by $gte operator', async function (context: TestContext) {
-                    const { storageManager } = await setupOperatorTest({
+                    const { storageManager } = await setupSimpleTest({
                         context,
                         fieldType
                     })
@@ -550,7 +585,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
 
     describe('sorting', () => {
         it('should be able to order results in ascending order', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int', shouldSupport: ['singleFieldSorting'], testContext: this
             })
@@ -566,7 +601,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
 
         it('should be able to order results in descending order', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int', shouldSupport: ['singleFieldSorting'], testContext: this
             })
@@ -584,7 +619,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
 
     describe('limiting', () => {
         it('should be able to limit ascending results', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int', shouldSupport: ['singleFieldSorting', 'resultLimiting'], testContext: this
             })
@@ -599,7 +634,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
 
         it('should be able to limit descending results', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int', shouldSupport: ['singleFieldSorting', 'resultLimiting'], testContext: this
             })
@@ -623,7 +658,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const foundObject = await storageManager.collection('user').findOneObject({ id: object.id })
             expect(foundObject).toEqual({
                 id: object.id,
-                identifier: 'email:joe@doe.com', isActive: true
+                identifier: 'email:joe@doe.com', isActive: true,
+                passwordHash: null,
             })
         })
 
@@ -635,7 +671,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const foundObject = await storageManager.collection('user').findOneObject({ id: object.id })
             expect(foundObject).toEqual({
                 id: object.id,
-                identifier: 'email:joe@doe.com', isActive: true
+                identifier: 'email:joe@doe.com', isActive: true,
+                passwordHash: null,
             })
         })
     })
@@ -742,7 +779,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
 
     describe('deletion', () => {
         it('should be able to delete single objects by pk', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int'
             })
@@ -755,7 +792,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
 
         it('should be able to delete multiple objects by pk', async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int'
             })
@@ -772,7 +809,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
 
     describe('counting', () => {
         it('should be able to count all objects', { shouldSupport: ['count'] }, async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int'
             })
@@ -782,7 +819,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
 
         it('should be able to count objects filtered by field equality', { shouldSupport: ['count'] }, async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int'
             })
@@ -792,7 +829,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
         })
 
         it('should be able to count objects filtered by field $lt comparison', { shouldSupport: ['count'] }, async function (context: TestContext) {
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context,
                 fieldType: 'int'
             })
@@ -868,7 +905,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
             const fieldTypes = new FieldTypeRegistry()
             fieldTypes.registerType('random-key', options.customField)
 
-            const { storageManager } = await setupOperatorTest({
+            const { storageManager } = await setupSimpleTest({
                 context, fieldTypes, fields: {
                     fieldString: { type: 'string' },
                     fieldCustom: { type: 'random-key', optional: true },
@@ -908,7 +945,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 })
                 expect(newObject).toEqual({
                     id: expect.anything(),
-                    fieldString: 'test'
+                    fieldString: 'test',
+                    fieldCustom: null,
                 })
 
                 const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
@@ -972,7 +1010,8 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 })
                 expect(newObject).toEqual({
                     id: expect.anything(),
-                    fieldString: 'test'
+                    fieldString: 'test',
+                    fieldCustom: null,
                 })
 
                 const foundObjectsBeforeUpdate = await storageManager.collection('object').findObjects({})
