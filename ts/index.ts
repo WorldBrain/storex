@@ -59,7 +59,7 @@ export default class StorageManager implements StorageManagerInterface {
             next = {
                 process: async args => {
                     extraData = { ...extraData, ...(args.extraData || {}) }
-                    const result = await middleware.process({ ...args, next: currentNext })
+                    const result = await middleware.process({ ...args, extraData, next: currentNext })
                     return result
                 }
             }
