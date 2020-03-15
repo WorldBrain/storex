@@ -53,15 +53,16 @@ export default class StorageManager implements StorageManagerInterface {
             process: ({ operation }: StorageMiddlewareContext | Omit<StorageMiddlewareContext, 'next'>) =>
                 this.backend.operation(operation[0], ...operation.slice(1))
         }
+
         let extraData = {}
         for (const middleware of this._middleware) {
-            next = ((currentNext) => ({
+            next = ((currentNext, currentMiddleware: StorageMiddleware) => ({
                 process: async args => {
                     extraData = { ...extraData, ...(args.extraData || {}) }
-                    const result = await middleware.process({ ...args, extraData, next: currentNext })
+                    const result = await currentMiddleware.process({ ...args, extraData, next: currentNext })
                     return result
                 }
-            }))(next)
+            }))(next, middleware)
         }
 
         return next.process({ operation: [operationName, ...args], extraData })
