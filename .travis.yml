@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+    - '12'
+install:
+    - yarn install --frozen-lockfile --network-concurrency 1
+script:
+    - yarn test
+cache:
+    yarn: true
+    directories:
+        - ~/.cache/yarn
+        - node_modules
+notifications:
+    if: branch = master AND type = push
+    email:
+        on_success: never
+        on_failure: always
