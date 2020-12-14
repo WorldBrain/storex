@@ -50,9 +50,11 @@ export default class StorageRegistry extends EventEmitter {
             def.indices = def.indices || []
 
             this._preprocessFieldTypes(def)
-            this._autoAssignCollectionPk(def)
             this._preprocessCollectionRelationships(name, def)
             this._preprocessCollectionIndices(name, def)
+
+            // Needs to happen after the relationships, so we can detect primary keys based on relationships
+            this._autoAssignCollectionPk(def)
 
             const version = def.version.getTime()
             this._collectionsByVersion[version] =
@@ -78,7 +80,7 @@ export default class StorageRegistry extends EventEmitter {
             this.listeners('initialized').map(
                 list => list.call(this),
             ),
-        ).then(() => {})
+        ).then(() => { })
     }
 
     get collectionVersionMap() {
@@ -139,6 +141,9 @@ export default class StorageRegistry extends EventEmitter {
     _preprocessCollectionIndices(collectionName: string, def: CollectionDefinition) {
         const flagField = (fieldName: string, indexDefIndex: number) => {
             if (!def.fields[fieldName]) {
+                if (def.relationshipsByAlias[fieldName]) {
+                    return
+                }
                 throw new Error(`Flagging field ${fieldName} of collection ${collectionName} as index, but field does not exist`)
             }
             def.fields[fieldName]._index = indexDefIndex
@@ -172,7 +177,7 @@ export default class StorageRegistry extends EventEmitter {
             indices.unshift({ field: 'id', pk: true })
             def.pkIndex = 'id'
         }
-        if (typeof def.pkIndex === 'string' && !def.fields[def.pkIndex]) {
+        if (typeof def.pkIndex === 'string' && !def.fields[def.pkIndex] && !def.relationshipsByAlias[def.pkIndex]) {
             def.fields[def.pkIndex] = { type: 'auto-pk' }
         }
     }
