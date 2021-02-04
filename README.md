@@ -26,7 +26,7 @@ Basic usage
 
 First, configure a StorageBackend and set up the StorageManager, which will be the main point of access to define, query and manipulate your data. For more in-depth information on how to do all of this, please refer to [the docs](./docs/0-start-here.md).
 
-```
+```typescript
 import StorageManager from 'storex'
 import { DexieStorageBackend } from 'storex-backend-dexie'
 

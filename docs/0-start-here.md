@@ -21,14 +21,14 @@ How it works
 
 You initialize a StorageBackend imported from its respective package:
 
-```
+```typescript
 import { DexieStorageBackend } from '@worldbrain/storex-backend-dexie'
 const storageBackend = new DexieStorageBackend({dbName: 'my-awesome-product'})
 ```
 
 You construct the storage manager, which will give you access to the StorageRegistry and the collection objects to access your data:
 
-```
+```typescript
 const storageManager = new StorageManager({ backend: storageBackend })
 
 # More info about this below
@@ -49,7 +49,7 @@ const users = await storageManager.collection('user').findObjects({ name: 'Bob',
 ```
 
 Under the hood, the collection methods are convenience methods that call the central `storageManager.operation(...)` method:
-```
+```typescript
 await storageManager.operation('createObject', 'user', { name: 'bla' })
 await storageManager.operation('executeBatch', [
     { operation: 'createObject', collection: 'user', args: { name: 'Diane' } },
@@ -71,7 +71,7 @@ In-depth documentation
 ======================
 
 * [Defining collections](./collections.md): This is about the steps above where you interact with storageManager.registry, describing the various options for your collections, fields and relationships.
-* [Interacting with data](./operations): How to query and manipulate your data.
+* [Interacting with data](./operations.md): How to query and manipulate your data.
 * [Introspecting collections](./registry.md): How you can use the available meta-data about your data in your applications and when writing a back-end.
 * [Using and writing middleware](./middleware.md): You can transform operations that your application does before they arrived at the `StorageBackend`.
 * [Using and writing backend plugins](./plugins.md): Backend-specific operations are implemented using plugins. Read how to use and write them here.

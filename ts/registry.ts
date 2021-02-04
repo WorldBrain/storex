@@ -44,26 +44,28 @@ export default class StorageRegistry extends EventEmitter {
             defs = [defs]
         }
 
-        defs.sort(def => def.version.getTime()).forEach(def => {
-            this.collections[name] = def
-            def.name = name
-            def.indices = def.indices || []
+        defs
+            .sort((a, b) => a.version.getTime() - b.version.getTime())
+            .forEach(def => {
+                this.collections[name] = def
+                def.name = name
+                def.indices = def.indices || []
 
-            this._preprocessFieldTypes(def)
-            this._preprocessCollectionRelationships(name, def)
-            this._preprocessCollectionIndices(name, def)
+                this._preprocessFieldTypes(def)
+                this._preprocessCollectionRelationships(name, def)
+                this._preprocessCollectionIndices(name, def)
 
-            // Needs to happen after the relationships, so we can detect primary keys based on relationships
-            this._autoAssignCollectionPk(def)
+                // Needs to happen after the relationships, so we can detect primary keys based on relationships
+                this._autoAssignCollectionPk(def)
 
-            const version = def.version.getTime()
-            this._collectionsByVersion[version] =
-                this._collectionsByVersion[version] || []
-            this._collectionsByVersion[version].push(def)
+                const version = def.version.getTime()
+                this._collectionsByVersion[version] =
+                    this._collectionsByVersion[version] || []
+                this._collectionsByVersion[version].push(def)
 
-            this._collectionVersionMap[version] = this._collectionVersionMap[version] || {}
-            this._collectionVersionMap[version][name] = def
-        })
+                this._collectionVersionMap[version] = this._collectionVersionMap[version] || {}
+                this._collectionVersionMap[version][name] = def
+            })
 
         this.emit('registered-collection', { collection: this.collections[name] })
     }
