@@ -4,7 +4,9 @@ import {
     isChildOfRelationship,
     isConnectsRelationship,
     isRelationshipReference,
+    IndexSourceField,
 } from './types'
+import type StorageManagerInterface from './types/manager'
 
 const internalPluralize = require('pluralize')
 
@@ -246,4 +248,40 @@ export function setObjectPk(
     }
 
     return object
+}
+
+export function getObjectWhereByPk(
+    storageRegistry: StorageRegistry,
+    collection: string,
+    pk: number | string | Array<number | string>,
+): { [field: string]: number | string } {
+    const getPkField = (indexSourceField: IndexSourceField) => {
+        return typeof indexSourceField === 'object' &&
+            'relationship' in indexSourceField
+            ? indexSourceField.relationship
+            : indexSourceField
+    }
+
+    const collectionDefinition = storageRegistry.collections[collection]
+    const pkIndex = collectionDefinition.pkIndex!
+    const where: { [field: string]: number | string } = {}
+    if (pkIndex instanceof Array) {
+        for (let index = 0; index < pkIndex.length; index++) {
+            const pkField = getPkField(pkIndex[index])
+            where[pkField] = pk[index]
+        }
+    } else {
+        where[getPkField(pkIndex)] = pk as number | string
+    }
+
+    return where
+}
+
+export async function getObjectByPk<T = any>(
+    storageManager: StorageManagerInterface,
+    collection: string,
+    pk: number | string | Array<number | string>,
+): Promise<T> {
+    const where = getObjectWhereByPk(storageManager.registry, collection, pk)
+    return storageManager.operation('findObject', collection, where)
 }
