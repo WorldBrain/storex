@@ -285,3 +285,46 @@ export async function getObjectByPk<T = any>(
     const where = getObjectWhereByPk(storageManager.registry, collection, pk)
     return storageManager.operation('findObject', collection, where)
 }
+
+export async function updateOrCreate(params: {
+    storageManager: StorageManagerInterface
+    executeOperation?: (
+        operationName: string,
+        ...operationArgs: any[]
+    ) => Promise<any>
+    collection: string
+    where?: { [key: string]: any }
+    updates: { [key: string]: any }
+}) {
+    const executeOperation =
+        params.executeOperation ??
+        ((...args) => params.storageManager.operation(...args))
+    const existingObject =
+        params.where &&
+        (await params.executeOperation(
+            'findObject',
+            params.collection,
+            params.where,
+        ))
+    if (existingObject) {
+        const pk = getObjectPk(
+            existingObject,
+            params.collection,
+            params.storageManager.registry,
+        )
+        const where = getObjectWhereByPk(
+            params.storageManager.registry,
+            params.collection,
+            pk,
+        )
+        await executeOperation('updateObject', params.collection, where, {
+            ...params.where,
+            ...params.updates,
+        })
+    } else {
+        await executeOperation('createObject', params.collection, {
+            ...(params.where ?? {}),
+            ...params.updates,
+        })
+    }
+}
