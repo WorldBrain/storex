@@ -81,7 +81,7 @@ export abstract class StorageBackend {
     async cleanup(): Promise<any> { }
     async migrate({ database }: { database?} = {}): Promise<any> { }
 
-    abstract async createObject(collection: string, object, options?: CreateSingleOptions)
+    abstract createObject(collection: string, object, options?: CreateSingleOptions): Promise<any>
 
     abstract findObjects<T>(collection: string, query, options?: FindManyOptions): Promise<Array<T>>
     async findObject<T>(collection: string, query, options?: FindSingleOptions): Promise<T | null> {
