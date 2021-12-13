@@ -295,7 +295,7 @@ export async function updateOrCreate(params: {
     collection: string
     where?: { [key: string]: any }
     updates: { [key: string]: any }
-}) {
+}): Promise<{ opPerformed: 'create' | 'update' }> {
     const executeOperation =
         params.executeOperation ??
         ((...args) => params.storageManager.operation(...args))
@@ -321,10 +321,12 @@ export async function updateOrCreate(params: {
             ...params.where,
             ...params.updates,
         })
+        return { opPerformed: 'update' }
     } else {
         await executeOperation('createObject', params.collection, {
             ...(params.where ?? {}),
             ...params.updates,
         })
+        return { opPerformed: 'create' }
     }
 }
