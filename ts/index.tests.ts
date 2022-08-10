@@ -220,7 +220,7 @@ export function testStorageBackendSetup(backendCreator: StorexBackendTestBackend
         await storageManager.backend.migrate()
     })
 
-    it('should throw no errors trying to set up a collection with indexed childOf relations with custom aliases and fieldNames', async (context: TestContext) => {
+    it('should throw no errors trying to set up a collection with indexed childOf relations with custom aliases and fieldNames', { shouldSupport: ['customFieldNames'] }, async (context: TestContext) => {
         const storageManager = new StorageManager({ backend: context.backend })
         storageManager.registry.registerCollections({
             page: {
@@ -841,7 +841,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
 
     describe('relationships', () => {
         for (const relationshipType of ['childOf', 'singleChildOf'] as ('childOf' | 'singleChildOf')[]) {
-            it(`should correctly store objects with ${relationshipType} relationships with a custom fieldName`, async function (context: TestContext) {
+            it(`should correctly store objects with ${relationshipType} relationships with a custom fieldName`, { shouldSupport: ['customFieldNames'] }, async function (context: TestContext) {
                 const { storageManager } = await setupChildOfTest({
                     backend: context.backend,
                     relationshipType, relationshipOptions: { fieldName: 'userId' }
@@ -852,7 +852,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 expect(email).toEqual({ id: expect.anything(), address: 'joe@joe.com', user: user.id })
             })
 
-            it(`should correctly find objects filtered by ${relationshipType} relationships with a custom fieldName`, async function (context: TestContext) {
+            it(`should correctly find objects filtered by ${relationshipType} relationships with a custom fieldName`, { shouldSupport: ['customFieldNames'] }, async function (context: TestContext) {
                 const { storageManager } = await setupChildOfTest({
                     backend: context.backend,
                     relationshipType, relationshipOptions: { fieldName: 'userId' }
@@ -863,7 +863,7 @@ export function testStorageBackendOperations(backendCreator: StorexBackendTestBa
                 expect(await storageManager.collection('email').findObject({ user: user.id })).toEqual(email)
             })
 
-            it(`should correctly delete objects filtered by ${relationshipType} relationships with a custom fieldName`, async function (context: TestContext) {
+            it(`should correctly delete objects filtered by ${relationshipType} relationships with a custom fieldName`, { shouldSupport: ['customFieldNames'] }, async function (context: TestContext) {
                 const { storageManager } = await setupChildOfTest({
                     backend: context.backend,
                     relationshipType, relationshipOptions: { fieldName: 'userId' }

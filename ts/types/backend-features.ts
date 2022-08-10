@@ -17,5 +17,6 @@ export interface StorageBackendFeatureSupport {
   collectionGrouping?: boolean
   collectionNesting?: boolean
   customFields?: boolean
+  customFieldNames?: boolean
   streamObjects?: boolean
 }
