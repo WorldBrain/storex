@@ -1,5 +1,5 @@
-const expect = require('expect')
-const omit = require('lodash/omit')
+import expect from 'expect'
+import omit from 'lodash/omit'
 import { createTestStorageManager, generateTestObject } from './index.tests'
 import { dissectCreateObjectOperation, convertCreateObjectDissectionToBatch, setIn, setObjectPk, getObjectWithoutPk, getObjectPk } from './utils';
 import StorageManager from '.';

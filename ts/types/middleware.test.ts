@@ -1,4 +1,4 @@
-const expect = require('expect')
+import expect from 'expect'
 import { createTestStorageManager, generateTestObject } from '../index.tests'
 import { StorageMiddleware } from './middleware';
 

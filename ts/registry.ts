@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
-const fromPairs = require('lodash/fromPairs')
-const sortBy = require('lodash/sortBy')
-const pluralize = require('pluralize')
+import fromPairs from 'lodash/fromPairs'
+import sortBy from 'lodash/sortBy'
+import pluralize from 'pluralize'
 import {
     isConnectsRelationship,
     isChildOfRelationship,

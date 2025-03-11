@@ -1,4 +1,4 @@
-const pickBy = require('lodash/fp/pickBy')
+import pickBy from 'lodash/fp/pickBy'
 import StorageRegistry from './registry'
 import {
     isChildOfRelationship,
@@ -8,7 +8,7 @@ import {
 } from './types'
 import type StorageManagerInterface from './types/manager'
 
-const internalPluralize = require('pluralize')
+import internalPluralize from 'pluralize'
 
 export function pluralize(singular: string) {
     return internalPluralize(singular)
