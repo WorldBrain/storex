@@ -2,7 +2,7 @@ Storex allows you to implement custom operations on the back-end for application
 
 ```typescript
 import StorageManager from "@worldbrain/storex";
-import { StorageBackendPlugin } from "@worldbrain/storex/lib/backend";
+import { StorageBackendPlugin } from "@worldbrain/storex/ts/backend";
 import { SequelizeStorageBackend } from "@worldbrain/storex-backend-sequelize";
 
 class TestSequelizeStorageBackendPlugin extends StorageBackendPlugin<SequelizeStorageBackend> {
@@ -21,10 +21,10 @@ const storageManager = new StorageManager({backend})
 console.log(await storageManager.operation('myproject:sequelize.doSomething', 'foo, 'bar')) // 'spam'
 ```
 
-Operation identifiers
-=====================
+# Operation identifiers
 
 The identifiers are namespaced as follows `<project>:<backend>.<operation>`. You can omit `<project>` and `<backend>`, but the rules are:
-* If no `project` or `backend` is specified, you're registering a standardized operation like `alterSchema`, which is defined in an internal constant named `PLUGGABLE_CORE_OPERATIONS` in `@worldbrain/storex/ts/types/backend.ts`.
-* If `backend` is defined, it should be an operation defined on `backend.pluggableOperations`.
-* If you specify only a `project`, which might be the name of a plugin, or the application you're building on top of Storex, you can name your operation anything you want, unless you also specify `backend`, in which case it should be an operation defined on `backend.pluggableOperations`.
+
+- If no `project` or `backend` is specified, you're registering a standardized operation like `alterSchema`, which is defined in an internal constant named `PLUGGABLE_CORE_OPERATIONS` in `@worldbrain/storex/ts/types/backend.ts`.
+- If `backend` is defined, it should be an operation defined on `backend.pluggableOperations`.
+- If you specify only a `project`, which might be the name of a plugin, or the application you're building on top of Storex, you can name your operation anything you want, unless you also specify `backend`, in which case it should be an operation defined on `backend.pluggableOperations`.

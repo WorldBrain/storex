@@ -8,10 +8,10 @@ import {
 } from './types'
 import type StorageManagerInterface from './types/manager'
 
-import internalPluralize from 'pluralize'
+import pluralize from 'pluralize'
 
 export function pluralize(singular: string) {
-    return internalPluralize(singular)
+    return pluralize(singular)
 }
 
 export type CreateObjectDissection = { objects: any[] }

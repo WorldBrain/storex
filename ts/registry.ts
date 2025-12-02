@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events'
-import fromPairs from 'lodash/fromPairs'
-import sortBy from 'lodash/sortBy'
+import { fromPairs, sortBy } from 'lodash'
 import pluralize from 'pluralize'
 import {
     isConnectsRelationship,
@@ -9,7 +8,11 @@ import {
     getChildOfRelationshipTarget,
     SingleChildOfRelationship,
 } from './types/relationships'
-import { CollectionDefinitions, CollectionDefinition, CollectionDefinitionMap } from './types/collections'
+import {
+    CollectionDefinitions,
+    CollectionDefinition,
+    CollectionDefinitionMap,
+} from './types/collections'
 import { IndexSourceField } from './types/indices'
 import { FieldTypeRegistry } from './fields'
 
@@ -44,9 +47,8 @@ export default class StorageRegistry extends EventEmitter {
             defs = [defs]
         }
 
-        defs
-            .sort((a, b) => a.version.getTime() - b.version.getTime())
-            .forEach(def => {
+        defs.sort((a, b) => a.version.getTime() - b.version.getTime()).forEach(
+            (def) => {
                 this.collections[name] = def
                 def.name = name
                 def.indices = def.indices || []
@@ -63,11 +65,15 @@ export default class StorageRegistry extends EventEmitter {
                     this._collectionsByVersion[version] || []
                 this._collectionsByVersion[version].push(def)
 
-                this._collectionVersionMap[version] = this._collectionVersionMap[version] || {}
+                this._collectionVersionMap[version] =
+                    this._collectionVersionMap[version] || {}
                 this._collectionVersionMap[version][name] = def
-            })
+            },
+        )
 
-        this.emit('registered-collection', { collection: this.collections[name] })
+        this.emit('registered-collection', {
+            collection: this.collections[name],
+        })
     }
 
     registerCollections(collections: CollectionDefinitionMap) {
@@ -79,24 +85,35 @@ export default class StorageRegistry extends EventEmitter {
     async finishInitialization() {
         this._connectReverseRelationships()
         return Promise.all(
-            this.listeners('initialized').map(
-                list => list.call(this),
-            ),
-        ).then(() => { })
+            this.listeners('initialized').map((list) => list.call(this)),
+        ).then(() => {})
     }
 
     get collectionVersionMap() {
-        this._deprecationWarning('StorageRegistry.collectionVersionMap is deprecated, use StorageRegistry.getCollectionsByVersion() instead')
+        this._deprecationWarning(
+            'StorageRegistry.collectionVersionMap is deprecated, use StorageRegistry.getCollectionsByVersion() instead',
+        )
         return this._collectionVersionMap
     }
 
     getCollectionsByVersion(targetVersion: Date): RegistryCollections {
         const collections = {}
-        for (const collectionDefinitions of Object.values(this.collectionVersionMap)) {
-            for (const [collectionName, collectionDefinition] of Object.entries(collectionDefinitions)) {
+        for (const collectionDefinitions of Object.values(
+            this.collectionVersionMap,
+        )) {
+            for (const [collectionName, collectionDefinition] of Object.entries(
+                collectionDefinitions,
+            )) {
                 const savedCollectionDefinition = collections[collectionName]
-                if (!savedCollectionDefinition || (collectionDefinition.version.getTime() > savedCollectionDefinition.version.getTime())) {
-                    if (collectionDefinition.version.getTime() <= targetVersion.getTime()) {
+                if (
+                    !savedCollectionDefinition ||
+                    collectionDefinition.version.getTime() >
+                        savedCollectionDefinition.version.getTime()
+                ) {
+                    if (
+                        collectionDefinition.version.getTime() <=
+                        targetVersion.getTime()
+                    ) {
                         collections[collectionName] = collectionDefinition
                     }
                 }
@@ -106,7 +123,9 @@ export default class StorageRegistry extends EventEmitter {
     }
 
     get collectionsByVersion() {
-        this._deprecationWarning('StorageRegistry.collectionsByVersion is deprecated, use StorageRegistry.getSchemaHistory() instead')
+        this._deprecationWarning(
+            'StorageRegistry.collectionsByVersion is deprecated, use StorageRegistry.getSchemaHistory() instead',
+        )
         return this._collectionsByVersion
     }
 
@@ -114,9 +133,12 @@ export default class StorageRegistry extends EventEmitter {
         const entries = Object.entries(this._collectionsByVersion)
         const sorted = sortBy(entries, ([version]) => parseInt(version))
         return sorted.map(([version, collectionsArray]) => {
-            const collections = fromPairs(collectionsArray.map(
-                collection => [collection.name, collection]
-            ))
+            const collections = fromPairs(
+                collectionsArray.map((collection) => [
+                    collection.name,
+                    collection,
+                ]),
+            )
             return { version: new Date(parseInt(version)), collections }
         })
     }
@@ -140,17 +162,25 @@ export default class StorageRegistry extends EventEmitter {
      * Handles mutating a collection's definition to flag all fields that are declared to be
      * indexable as indexed fields.
      */
-    _preprocessCollectionIndices(collectionName: string, def: CollectionDefinition) {
+    _preprocessCollectionIndices(
+        collectionName: string,
+        def: CollectionDefinition,
+    ) {
         const flagField = (fieldName: string, indexDefIndex: number) => {
             if (!def.fields[fieldName]) {
                 if (def.relationshipsByAlias[fieldName]) {
                     return
                 }
-                throw new Error(`Flagging field ${fieldName} of collection ${collectionName} as index, but field does not exist`)
+                throw new Error(
+                    `Flagging field ${fieldName} of collection ${collectionName} as index, but field does not exist`,
+                )
             }
             def.fields[fieldName]._index = indexDefIndex
         }
-        const flagIndexSourceField = (indexSource: IndexSourceField, indexDefIndex: number) => {
+        const flagIndexSourceField = (
+            indexSource: IndexSourceField,
+            indexDefIndex: number,
+        ) => {
             if (typeof indexSource === 'string') {
                 flagField(indexSource, indexDefIndex)
             }
@@ -161,7 +191,9 @@ export default class StorageRegistry extends EventEmitter {
             const { field: indexSourceFields } = indexDef
             // Compound indexes need to flag all specified fields
             if (indexSourceFields instanceof Array) {
-                indexSourceFields.forEach(indexSource => { flagIndexSourceField(indexSource, indexDefIndex) })
+                indexSourceFields.forEach((indexSource) => {
+                    flagIndexSourceField(indexSource, indexDefIndex)
+                })
             } else {
                 flagIndexSourceField(indexSourceFields, indexDefIndex)
             }
@@ -170,16 +202,22 @@ export default class StorageRegistry extends EventEmitter {
 
     _autoAssignCollectionPk(def: CollectionDefinition) {
         const indices = def.indices || []
-        indices.forEach(({ field: indexSourceFields, pk: isPk }, indexDefIndex) => {
-            if (isPk) {
-                def.pkIndex = indexSourceFields
-            }
-        })
+        indices.forEach(
+            ({ field: indexSourceFields, pk: isPk }, indexDefIndex) => {
+                if (isPk) {
+                    def.pkIndex = indexSourceFields
+                }
+            },
+        )
         if (!def.pkIndex) {
             indices.unshift({ field: 'id', pk: true })
             def.pkIndex = 'id'
         }
-        if (typeof def.pkIndex === 'string' && !def.fields[def.pkIndex] && !def.relationshipsByAlias[def.pkIndex]) {
+        if (
+            typeof def.pkIndex === 'string' &&
+            !def.fields[def.pkIndex] &&
+            !def.relationshipsByAlias[def.pkIndex]
+        ) {
             def.fields[def.pkIndex] = { type: 'auto-pk' }
         }
     }
@@ -187,16 +225,20 @@ export default class StorageRegistry extends EventEmitter {
     /**
      * Creates the fields and indices for relationships
      */
-    _preprocessCollectionRelationships(name: string, def: CollectionDefinition) {
+    _preprocessCollectionRelationships(
+        name: string,
+        def: CollectionDefinition,
+    ) {
         def.relationships = def.relationships || []
         def.relationshipsByAlias = {}
         def.reverseRelationshipsByAlias = {}
         for (const relationship of def.relationships) {
             if (isConnectsRelationship(relationship)) {
-                relationship.aliases = relationship.aliases || relationship.connects
+                relationship.aliases =
+                    relationship.aliases || relationship.connects
                 relationship.fieldNames = relationship.fieldNames || [
                     `${relationship.aliases[0]}Rel`,
-                    `${relationship.aliases[1]}Rel`
+                    `${relationship.aliases[1]}Rel`,
                 ]
 
                 relationship.reverseAliases = relationship.reverseAliases || [
@@ -205,50 +247,72 @@ export default class StorageRegistry extends EventEmitter {
                 ]
             } else if (isChildOfRelationship(relationship)) {
                 relationship.sourceCollection = name
-                relationship.targetCollection = getChildOfRelationshipTarget(relationship)
-                relationship.single = !!(<SingleChildOfRelationship>relationship).singleChildOf
-                relationship.alias = relationship.alias || relationship.targetCollection
+                relationship.targetCollection =
+                    getChildOfRelationshipTarget(relationship)
+                relationship.single = !!(<SingleChildOfRelationship>(
+                    relationship
+                )).singleChildOf
+                relationship.alias =
+                    relationship.alias || relationship.targetCollection
                 def.relationshipsByAlias[relationship.alias] = relationship
 
                 if (!relationship.reverseAlias) {
-                    relationship.reverseAlias = relationship.single ? name : pluralize(name)
+                    relationship.reverseAlias = relationship.single
+                        ? name
+                        : pluralize(name)
                 }
 
-                relationship.fieldName = relationship.fieldName || `${relationship.alias}Rel`
+                relationship.fieldName =
+                    relationship.fieldName || `${relationship.alias}Rel`
             } else {
-                throw new Error("Invalid relationship detected: " + JSON.stringify(relationship))
+                throw new Error(
+                    'Invalid relationship detected: ' +
+                        JSON.stringify(relationship),
+                )
             }
         }
     }
 
     _connectReverseRelationships() {
-        Object.values(this.collections).forEach(sourceCollectionDef => {
+        Object.values(this.collections).forEach((sourceCollectionDef) => {
             for (const relationship of sourceCollectionDef.relationships) {
                 if (isConnectsRelationship(relationship)) {
-                    const connected = [this.collections[relationship.connects[0]], this.collections[relationship.connects[1]]]
+                    const connected = [
+                        this.collections[relationship.connects[0]],
+                        this.collections[relationship.connects[1]],
+                    ]
                     for (let idx = 0; idx < connected.length; ++idx) {
                         if (!connected[idx]) {
                             throw new Error(
                                 `Collection '${sourceCollectionDef.name!}' defined ` +
-                                `a 'connects' relation involving non-existing ` +
-                                `collection '${relationship.connects[idx]}`
+                                    `a 'connects' relation involving non-existing ` +
+                                    `collection '${relationship.connects[idx]}`,
                             )
                         }
                     }
 
-                    connected[0].reverseRelationshipsByAlias[relationship.reverseAliases[0]] = relationship
-                    connected[1].reverseRelationshipsByAlias[relationship.reverseAliases[1]] = relationship
+                    connected[0].reverseRelationshipsByAlias[
+                        relationship.reverseAliases[0]
+                    ] = relationship
+                    connected[1].reverseRelationshipsByAlias[
+                        relationship.reverseAliases[1]
+                    ] = relationship
                 } else if (isChildOfRelationship(relationship)) {
-                    const targetCollectionDef = this.collections[relationship.targetCollection]
+                    const targetCollectionDef =
+                        this.collections[relationship.targetCollection]
                     if (!targetCollectionDef) {
-                        const relationshipType = relationship.single ? 'singleChildOf' : 'childOf'
+                        const relationshipType = relationship.single
+                            ? 'singleChildOf'
+                            : 'childOf'
                         throw new Error(
                             `Collection '${sourceCollectionDef.name!}' defined ` +
-                            `a '${relationshipType}' relationship to non-existing ` +
-                            `collection '${relationship.targetCollection}`
+                                `a '${relationshipType}' relationship to non-existing ` +
+                                `collection '${relationship.targetCollection}`,
                         )
                     }
-                    targetCollectionDef.reverseRelationshipsByAlias[relationship.reverseAlias] = relationship
+                    targetCollectionDef.reverseRelationshipsByAlias[
+                        relationship.reverseAlias
+                    ] = relationship
                 }
             }
         })
